@@ -1,0 +1,62 @@
+---
+import type { ProjectArchitectureStep } from '../data/projects';
+
+interface Props {
+  steps: ProjectArchitectureStep[];
+  title?: string;
+}
+
+const { steps, title = 'System Architecture Flow' } = Astro.props;
+---
+
+<div class="my-8 bg-[#2B1D16]/75 border border-[#E9DFCF]/12 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+  <div class="flex items-center justify-between mb-6 pb-4 border-b border-[#E9DFCF]/10">
+    <div class="flex items-center space-x-2.5">
+      <span class="w-2.5 h-2.5 rounded-full bg-[#9CAF88]"></span>
+      <h3 class="technical-mono text-sm uppercase tracking-wider text-[#E9DFCF] font-bold">{title}</h3>
+    </div>
+    <span class="technical-mono text-xs text-[#C9BFAF]/70">END-TO-END VERIFIED PIPELINE</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+    {steps.map((step, idx) => (
+      <div class="relative flex flex-col justify-between p-4 bg-[#1D1511]/90 border border-[#E9DFCF]/10 hover:border-[#9CAF88]/50 rounded-xl transition-colors group">
+        
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="technical-mono text-xs font-bold text-[#9CAF88] transition-colors">
+              STEP {step.step}
+            </span>
+            <span class="text-[10px] technical-mono text-[#C9BFAF]/60 px-2 py-0.5 bg-[#403027]/60 rounded-full">
+              FLOW #{idx + 1}
+            </span>
+          </div>
+
+          <h4 class="font-display font-semibold text-sm text-[#E9DFCF] mb-2">
+            {step.name}
+          </h4>
+
+          <p class="text-xs text-[#C9BFAF] leading-relaxed mb-4">
+            {step.description}
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-[#E9DFCF]/10">
+          <span class="text-[10px] technical-mono text-[#9CAF88] font-medium block">
+            {step.technology}
+          </span>
+        </div>
+
+        <!-- Connection Arrow for Desktop -->
+        {idx < steps.length - 1 && (
+          <div class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-[#9CAF88]/60 pointer-events-none" aria-hidden="true">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        )}
+
+      </div>
+    ))}
+  </div>
+</div>

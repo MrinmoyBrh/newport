@@ -1,0 +1,301 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getDashboardStats } from '../../lib/content';
+
+export const prerender = false;
+
+let stats: any;
+let dbError: string | null = null;
+try {
+  stats = await getDashboardStats();
+} catch (err: any) {
+  console.error('[Admin Dashboard] Error loading dashboard statistics:', err);
+  dbError = err?.message || 'Database error occurred while retrieving dashboard statistics.';
+  stats = {
+    totalProjects: 0,
+    publishedProjects: 0,
+    showcaseProjects: 0,
+    additionalProjects: 0,
+    totalSkills: 0,
+    pendingDrafts: 0,
+    lastPublishedAt: Date.now(),
+    activityDays: [],
+    recentActivities: [],
+  };
+}
+
+const maxActivity = Math.max(...(stats.activityDays || []).map((d: any) => d.count), 1);
+---
+
+<AdminLayout title="Overview" subtitle="Manage your portfolio, projects, and website content from one place." activeNav="dashboard">
+  
+  <div class="space-y-8">
+    
+    {dbError && (
+      <div class="bg-[#EF4444]/10 border border-[#EF4444]/40 rounded-2xl p-5 text-[#EF4444] flex items-start gap-3 shadow-lg">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#EF4444]">Database Operation Warning</h3>
+          <p class="text-xs text-[#EF4444]/90 mt-1 font-mono">{dbError}</p>
+        </div>
+      </div>
+    )}
+    
+    <!-- ============================================================
+         FINTRIXITY SUMMARY METRIC CARDS
+         ============================================================ -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      
+      <!-- Card 01: Vibrant Orange Card — Total Projects -->
+      <div class="bg-[#9CAF88] rounded-2xl p-6 text-black flex flex-col justify-between shadow-lg shadow-[#9CAF88]/15 relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono font-bold tracking-wider uppercase text-black/70">TOTAL PROJECTS</span>
+          <a href="/admin/projects" class="p-1.5 rounded-lg bg-black/10 hover:bg-black/20 text-black transition-colors" title="Manage Projects">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div>
+          <div class="text-4xl sm:text-5xl font-black tracking-tight mb-2">
+            {stats.totalProjects}
+          </div>
+          <div class="flex items-center space-x-3 text-xs font-medium text-black/80">
+            <span><strong>{stats.publishedProjects}</strong> Published</span>
+            <span>•</span>
+            <span><strong>{stats.showcaseProjects}</strong> Featured</span>
+            <span>•</span>
+            <span><strong>{stats.additionalProjects}</strong> Systems</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-black/15 flex items-center justify-between text-[11px] font-bold">
+          <span>PROJECT DIRECTORY</span>
+          <a href="/admin/projects/new" class="underline hover:text-white transition-colors">+ Add New Project</a>
+        </div>
+      </div>
+
+      <!-- Card 02: Dark Card — Published Sections -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 text-[#F5F5F5] flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono font-bold tracking-wider uppercase text-[#929292]">PORTFOLIO STATUS</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#22C55E] mr-1.5 animate-pulse"></span>
+            LIVE & SYNCED
+          </span>
+        </div>
+        <div>
+          <div class="text-3xl sm:text-4xl font-black tracking-tight mb-2 text-[#F5F5F5]">
+            11 / 11
+          </div>
+          <p class="text-xs text-[#929292] leading-relaxed">
+            All primary content sections active and connected to CMS.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-[#343434]/60 flex items-center justify-between text-[11px] text-[#929292]">
+          <span>LAST PUBLISHED:</span>
+          <span class="text-[#F5F5F5] font-mono">{new Date(stats.lastPublishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      </div>
+
+      <!-- Card 03: Dark Card — Pending Changes / Drafts -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 text-[#F5F5F5] flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono font-bold tracking-wider uppercase text-[#929292]">PENDING DRAFTS</span>
+          {stats.pendingDrafts > 0 ? (
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30">
+              UNPUBLISHED EDITS
+            </span>
+          ) : (
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30">
+              UP TO DATE
+            </span>
+          )}
+        </div>
+        <div>
+          <div class="text-3xl sm:text-4xl font-black tracking-tight mb-2 text-[#F5F5F5]">
+            {stats.pendingDrafts} <span class="text-sm font-normal text-[#929292]">staged changes</span>
+          </div>
+          <p class="text-xs text-[#929292] leading-relaxed">
+            {stats.pendingDrafts > 0
+              ? 'You have unpublished changes staged. Review in preview before publishing.'
+              : 'Public website matches all current administrative content.'}
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-[#343434]/60 flex items-center justify-between text-[11px]">
+          <a href="/admin/preview" class="text-[#929292] hover:text-[#F5F5F5] transition-colors">Preview Staged Drafts →</a>
+          <a href="/admin/publishing" class="text-[#9CAF88] hover:text-[#B1C2A0] font-bold transition-colors">Publish Manager</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         QUICK ACTIONS PANEL
+         ============================================================ -->
+    <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#343434]/60">
+        <div>
+          <h2 class="text-sm font-bold text-[#F5F5F5] uppercase font-mono tracking-wider">Quick Actions</h2>
+          <p class="text-xs text-[#929292] mt-0.5">Direct shortcuts to frequent content and project operations.</p>
+        </div>
+        <span class="text-xs font-mono text-[#9CAF88]">[FAST ACCESS]</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <a href="/admin/projects/new" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Add Project</span>
+        </a>
+
+        <a href="/admin/hero" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Edit Hero</span>
+        </a>
+
+        <a href="/admin/skills" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Skills Matrix</span>
+        </a>
+
+        <a href="/admin/experience" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Experience</span>
+        </a>
+
+        <a href="/admin/media" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Media Library</span>
+        </a>
+
+        <a href="/admin/appearance" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Appearance</span>
+        </a>
+
+        <a href="/admin/preview" target="_blank" class="p-3 rounded-xl bg-[#282828] hover:bg-[#303030] border border-[#343434] flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88]/10 text-[#9CAF88] flex items-center justify-center mb-2 group-hover:bg-[#9CAF88] group-hover:text-black transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </div>
+          <span class="text-xs font-semibold text-[#F5F5F5]">Live Preview</span>
+        </a>
+
+        <a href="/admin/publishing" class="p-3 rounded-xl bg-[#9CAF88]/10 hover:bg-[#9CAF88] border border-[#9CAF88]/30 flex flex-col items-center justify-center text-center transition-all group">
+          <div class="w-8 h-8 rounded-lg bg-[#9CAF88] text-[#1D1511] flex items-center justify-center mb-2 group-hover:bg-black group-hover:text-[#9CAF88] transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <span class="text-xs font-bold text-[#9CAF88] group-hover:text-black">Publish Live</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         FINTRIXITY PORTFOLIO ACTIVITY VISUALIZATION (7 DAYS)
+         ============================================================ -->
+    <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+        <div>
+          <h2 class="text-sm font-bold text-[#F5F5F5] uppercase font-mono tracking-wider">CMS Activity Volume</h2>
+          <p class="text-xs text-[#929292] mt-0.5">Real administrative operations, content updates, and deployment events.</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs font-mono text-[#929292]">
+          <span class="w-2 h-2 rounded-full bg-[#9CAF88]"></span>
+          <span>Rolling 7-Day Operations</span>
+        </div>
+      </div>
+
+      <!-- Activity Bar Chart Inspired by Fintrixity -->
+      <div class="h-44 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-[#343434]/50">
+        {stats.activityDays.map((d: any) => {
+          const heightPercent = Math.max(Math.round((d.count / maxActivity) * 100), 12);
+          return (
+            <div class="flex-1 flex flex-col items-center h-full justify-end group">
+              <div class="relative w-full max-w-[40px] flex items-end justify-center h-full">
+                <div
+                  style={`height: ${heightPercent}%;`}
+                  class="w-full bg-[#282828] group-hover:bg-[#9CAF88] transition-colors rounded-t-lg relative"
+                >
+                  <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#191919] border border-[#343434] text-[10px] text-[#F5F5F5] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-mono">
+                    {d.count} actions
+                  </div>
+                </div>
+              </div>
+              <span class="text-[11px] font-mono text-[#929292] mt-2 group-hover:text-[#F5F5F5]">{d.day}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- ============================================================
+         RECENT ACTIVITIES TABLE
+         ============================================================ -->
+    <div id="activity" class="bg-[#202020] border border-[#343434] rounded-2xl overflow-hidden shadow-sm">
+      <div class="p-6 border-b border-[#343434]/60 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-[#F5F5F5] uppercase font-mono tracking-wider">Recent Activity Log</h2>
+          <p class="text-xs text-[#929292] mt-0.5">Immutable audit trail of administrative modifications.</p>
+        </div>
+        <a href="/admin/history" class="text-xs font-mono text-[#9CAF88] hover:text-[#B1C2A0]">View All Revisions →</a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#191919] text-[#929292] font-mono uppercase text-[10px] tracking-wider border-b border-[#343434]">
+            <tr>
+              <th class="py-3 px-6">Action</th>
+              <th class="py-3 px-6">Entity</th>
+              <th class="py-3 px-6">Description</th>
+              <th class="py-3 px-6">Timestamp</th>
+              <th class="py-3 px-6 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#343434]/40 text-[#F5F5F5]">
+            {stats.recentActivities.length > 0 ? (
+              stats.recentActivities.map((act: any) => (
+                <tr class="hover:bg-[#282828] transition-colors">
+                  <td class="py-3.5 px-6 font-mono font-bold text-[#9CAF88]">
+                    [{act.action}]
+                  </td>
+                  <td class="py-3.5 px-6 font-mono text-[#929292]">
+                    {act.entity_type}
+                  </td>
+                  <td class="py-3.5 px-6 font-medium">
+                    {act.description}
+                  </td>
+                  <td class="py-3.5 px-6 text-[#929292] font-mono text-[11px]">
+                    {new Date(act.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td class="py-3.5 px-6 text-right">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#22C55E]/10 text-[#22C55E]">
+                      SUCCESS
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colspan="5" class="py-8 text-center text-[#929292] font-mono">
+                  No activity recorded yet. Initializing system records...
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</AdminLayout>

@@ -1,0 +1,237 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ArchitectureDiagram from '../../components/ArchitectureDiagram.astro';
+import { projects, type ProjectCaseStudy } from '../../data/projects';
+import { getProjectBySlug } from '../../lib/content';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const previewDraft = Astro.url.searchParams.get('preview') === 'draft';
+
+let project: ProjectCaseStudy | null = null;
+if (slug) {
+  try {
+    const dbProject = await getProjectBySlug(slug, !previewDraft);
+    if (dbProject) {
+      project = dbProject as unknown as ProjectCaseStudy;
+    }
+  } catch (e) {
+    // Database query fallback
+  }
+  if (!project) {
+    project = projects.find((p) => p.slug === slug) || null;
+  }
+}
+
+if (!project) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout
+  title={`${project.title} — Verified Case Study | Mrinmoy Borah`}
+  description={project.summary}
+>
+  <Header />
+
+  <main id="main-content" class="py-16 sm:py-20 relative">
+    
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Back Navigation Link -->
+      <div class="mb-10">
+        <a
+          href="/#systems"
+          class="inline-flex items-center space-x-2 text-xs font-semibold technical-mono text-[#C9BFAF] hover:text-[#9CAF88] transition-colors"
+        >
+          <span class="text-[#9CAF88]">←</span>
+          <span>Return to Systems Index</span>
+        </a>
+      </div>
+
+      <!-- Case Study Header Dossier -->
+      <header class="mb-14 pb-8 border-b border-[#E9DFCF]/10">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <span class="px-3.5 py-1 text-xs font-semibold technical-mono bg-[#9CAF88]/15 text-[#9CAF88] border border-[#9CAF88]/25 rounded-full">
+            {project.category}
+          </span>
+          <span class="text-[#E9DFCF]/20" aria-hidden="true">•</span>
+          <span class="technical-mono text-xs text-[#C9BFAF]">
+            {project.role}
+          </span>
+          {project.organization && (
+            <>
+              <span class="text-[#E9DFCF]/20" aria-hidden="true">•</span>
+              <span class="technical-mono text-xs text-[#9CAF88] font-medium">
+                {project.organization}
+              </span>
+            </>
+          )}
+          <span class="text-[#E9DFCF]/20" aria-hidden="true">•</span>
+          <span class="technical-mono text-xs text-[#C9BFAF]/60">
+            {project.period}
+          </span>
+        </div>
+
+        <h1 class="font-brush text-3xl sm:text-5xl lg:text-6xl text-[#E9DFCF] leading-snug mb-6">
+          {project.title}
+        </h1>
+
+        <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] lg:text-[18px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] max-w-3xl mb-8">
+          {project.tagline}
+        </p>
+
+        <!-- Action Links -->
+        <div class="flex flex-wrap items-center gap-4">
+          {project.githubUrl && (
+            <a
+              href={project.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-5 py-2.5 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold technical-mono text-xs rounded-full transition-colors flex items-center space-x-2 shadow-lg shadow-[#9CAF88]/20"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>Explore GitHub Repository</span>
+            </a>
+          )}
+          
+          <a
+            href="/#architecture"
+            class="px-5 py-2.5 bg-[#2B1D16]/80 hover:bg-[#403027] text-[#E9DFCF] border border-[#E9DFCF]/15 rounded-full technical-mono text-xs transition-colors flex items-center space-x-2"
+          >
+            <span>Launch Live Architecture Simulator</span>
+            <span class="text-[#9CAF88]">→</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Technical Implementation Highlights -->
+      <section class="mb-14 p-6 sm:p-8 bg-[#2B1D16]/70 border border-[#E9DFCF]/12 rounded-2xl relative shadow-2xl backdrop-blur-md">
+        <div class="flex items-center space-x-2.5 technical-mono text-xs text-[#9CAF88] font-bold uppercase tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#9CAF88] inline-block"></span>
+          <span>Technical Highlights & Verified Implementation</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {project.verifiedClaims.map((claim) => (
+            <div class="flex items-start space-x-2.5 text-xs sm:text-sm text-[#C9BFAF]">
+              <span class="text-[#9CAF88] technical-mono font-bold mt-0.5">›</span>
+              <span>{claim}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Section: The Engineering Challenge -->
+      <section class="mb-14">
+        <h2 class="font-brush text-2xl sm:text-3xl text-[#E9DFCF] mb-4 leading-snug">
+          The Problem & Requirements
+        </h2>
+        <div class="paragraph-manrope font-manrope p-6 sm:p-8 rounded-2xl bg-[#2B1D16]/65 border border-[#E9DFCF]/12 text-[#C9BFAF] text-[16px] sm:text-[17px] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] backdrop-blur-md">
+          {project.challenge}
+        </div>
+      </section>
+
+      <!-- Section: Architecture Flow Diagram -->
+      {project.architectureSteps.length > 0 && (
+        <section class="mb-14">
+          <h2 class="font-brush text-2xl sm:text-3xl text-[#E9DFCF] mb-2 leading-snug">
+            Execution Flow & System Decoupling
+          </h2>
+          <p class="paragraph-manrope font-manrope text-[15px] sm:text-[16px] text-[#C9BFAF] mb-6 leading-[1.65] tracking-[-0.01em]">
+            Detailed walkthrough of request lifecycle, data mutations, and asynchronous transitions.
+          </p>
+          <ArchitectureDiagram steps={project.architectureSteps} title={`${project.title} Lifecycle`} />
+          <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] mt-6">
+            {project.architectureNarrative}
+          </p>
+        </section>
+      )}
+
+      <!-- Section: Verified Code Snippets & Implementation Details -->
+      <section class="mb-14 space-y-8">
+        <h2 class="font-brush text-2xl sm:text-3xl text-[#E9DFCF] mb-4 leading-snug">
+          Implementation Patterns
+        </h2>
+
+        {project.technicalHighlights.map((highlight) => (
+          <div class="bg-[#2B1D16]/65 border border-[#E9DFCF]/12 rounded-2xl p-6 sm:p-8 relative shadow-2xl backdrop-blur-md">
+            <h3 class="font-display font-bold text-lg text-[#E9DFCF] mb-3">
+              {highlight.title}
+            </h3>
+            <p class="paragraph-manrope font-manrope text-[14px] sm:text-[15px] text-[#C9BFAF] leading-[1.65] tracking-[-0.01em] mb-4">
+              {highlight.description}
+            </p>
+            {highlight.codeSnippet && (
+              <div class="bg-[#1D1511] p-4 rounded-xl border border-[#E9DFCF]/10 overflow-x-auto">
+                <pre class="technical-mono text-xs text-[#E9DFCF] leading-relaxed"><code>{highlight.codeSnippet}</code></pre>
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
+
+      <!-- Section: Technical Stack Topology -->
+      <section class="mb-16 p-6 sm:p-8 bg-[#2B1D16]/65 border border-[#E9DFCF]/12 rounded-2xl relative backdrop-blur-md">
+        <h2 class="font-brush text-2xl text-[#E9DFCF] mb-6 leading-snug">
+          Component Stack & Tooling Matrix
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div>
+            <span class="block text-xs technical-mono text-[#C9BFAF]/70 mb-2">RUNTIMES</span>
+            <ul class="space-y-1.5 text-xs text-[#E9DFCF] font-medium">
+              {project.stack.runtime.map((item) => <li>• {item}</li>)}
+            </ul>
+          </div>
+          <div>
+            <span class="block text-xs technical-mono text-[#C9BFAF]/70 mb-2">DATA STORES</span>
+            <ul class="space-y-1.5 text-xs text-[#E9DFCF] font-medium">
+              {project.stack.dataStores.map((item) => <li>• {item}</li>)}
+            </ul>
+          </div>
+          <div>
+            <span class="block text-xs technical-mono text-[#C9BFAF]/70 mb-2">MESSAGING / QUEUES</span>
+            <ul class="space-y-1.5 text-xs text-[#E9DFCF] font-medium">
+              {project.stack.messaging.length > 0 ? (
+                project.stack.messaging.map((item) => <li>• {item}</li>)
+              ) : (
+                <li class="text-[#C9BFAF]/50">None / Embedded</li>
+              )}
+            </ul>
+          </div>
+          <div>
+            <span class="block text-xs technical-mono text-[#C9BFAF]/70 mb-2">PROTOCOLS & TOOLING</span>
+            <ul class="space-y-1.5 text-xs text-[#E9DFCF] font-medium">
+              {project.stack.tooling.map((item) => <li>• {item}</li>)}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Next System Footer Link -->
+      <div class="pt-8 border-t border-[#E9DFCF]/10 flex items-center justify-between">
+        <a
+          href="/#systems"
+          class="text-xs technical-mono font-semibold text-[#C9BFAF] hover:text-[#9CAF88] transition-colors"
+        >
+          ← Back to All Systems
+        </a>
+
+        <a
+          href="/#contact"
+          class="px-5 py-2.5 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] technical-mono text-xs font-bold rounded-full transition-all shadow-[0_2px_12px_rgba(156,175,136,0.3)]"
+        >
+          Discuss Architecture With Mrinmoy →
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <Footer />
+</Layout>

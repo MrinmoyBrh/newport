@@ -1,0 +1,237 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getEducation } from '../../lib/content';
+
+export const prerender = false;
+
+const educationList = await getEducation();
+---
+
+<AdminLayout title="Education Manager" subtitle="Manage academic credentials, coursework & institutions" activeNav="education">
+  
+  <div class="space-y-6">
+    <!-- Header Banner -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5] flex items-center space-x-2">
+          <span>Academic Credentials</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">{educationList.length} Records</span>
+        </h2>
+        <p class="text-xs text-[#929292] mt-1">Configure degrees, engineering institutions, CGPA/marks, and core subjects.</p>
+      </div>
+      <button id="add-edu-btn" class="px-3.5 py-2 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-sm self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span>Add Academic Record</span>
+      </button>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <!-- Education Cards -->
+    <div class="space-y-4">
+      {educationList.map((edu: any, index: number) => (
+        <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 hover:border-[#444444] transition-colors" data-id={edu.id}>
+          <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+            
+            <div class="space-y-2 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#282828] text-[#929292] border border-[#343434]">#{index + 1}</span>
+                <h3 class="text-sm font-bold text-[#F5F5F5]">{edu.degree} in {edu.field}</h3>
+                <span class="text-xs text-[#9CAF88] font-semibold">@ {edu.institution}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">{edu.status}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#282828] text-[#929292] border border-[#343434]">{edu.period}</span>
+              </div>
+
+              <div class="text-xs text-[#929292]">
+                <span>{edu.location}</span>
+              </div>
+
+              {edu.details && edu.details.length > 0 && (
+                <div class="pt-2">
+                  <div class="text-[11px] font-mono text-[#929292] uppercase tracking-wider mb-1">Highlights & Coursework:</div>
+                  <ul class="list-disc list-inside space-y-1 text-xs text-[#F5F5F5]/80">
+                    {edu.details.map((d: string) => (
+                      <li class="pl-1 leading-relaxed">{d}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div class="flex items-center space-x-2 self-end lg:self-start">
+              <button
+                class="edit-edu-btn px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#343434] text-xs text-[#F5F5F5] border border-[#343434] transition-colors"
+                data-edu={JSON.stringify(edu)}
+              >
+                Edit
+              </button>
+            </div>
+
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Modal Form -->
+    <div id="edu-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#191919] border border-[#343434] rounded-xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+        <div class="p-4 border-b border-[#343434] flex items-center justify-between">
+          <h3 id="modal-title" class="text-sm font-bold text-[#F5F5F5]">Add Academic Record</h3>
+          <button id="close-modal-btn" class="p-1 text-[#929292] hover:text-[#F5F5F5]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="edu-form" class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs flex-1">
+          <input type="hidden" id="edu-id" name="id" />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[#929292] font-mono text-[11px] mb-1">DEGREE *</label>
+              <input type="text" id="edu-degree" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" placeholder="e.g. B.Tech" />
+            </div>
+            <div>
+              <label class="block text-[#929292] font-mono text-[11px] mb-1">FIELD OF STUDY *</label>
+              <input type="text" id="edu-field" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" placeholder="e.g. Computer Science & Engineering" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">INSTITUTION NAME *</label>
+            <input type="text" id="edu-institution" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" placeholder="e.g. Dhemaji Engineering College" />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[#929292] font-mono text-[11px] mb-1">LOCATION</label>
+              <input type="text" id="edu-location" class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" placeholder="e.g. Assam, India" />
+            </div>
+            <div>
+              <label class="block text-[#929292] font-mono text-[11px] mb-1">PERIOD *</label>
+              <input type="text" id="edu-period" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" placeholder="e.g. 2023 — 2027" />
+            </div>
+            <div>
+              <label class="block text-[#929292] font-mono text-[11px] mb-1">STATUS</label>
+              <select id="edu-status" class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none">
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">KEY ACHIEVEMENTS / DETAILS (One per line)</label>
+            <textarea id="edu-details" rows="4" class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] font-mono text-[11px] focus:border-[#9CAF88] focus:outline-none" placeholder="Core coursework in Data Structures, Algorithms, OS, and Database Systems&#10;Focusing on distributed systems and cloud backends"></textarea>
+          </div>
+
+          <div class="pt-3 border-t border-[#343434] flex items-center justify-end space-x-2">
+            <button type="button" id="cancel-modal-btn" class="px-4 py-2 rounded-lg bg-[#282828] hover:bg-[#343434] text-xs text-[#929292] font-medium transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm">
+              Save Record
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('edu-modal');
+    const form = document.getElementById('edu-form') as HTMLFormElement;
+    const modalTitle = document.getElementById('modal-title');
+    const toast = document.getElementById('status-toast');
+
+    const addBtn = document.getElementById('add-edu-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    function openModal(data: any = null) {
+      form.reset();
+      if (data) {
+        modalTitle!.textContent = 'Edit Academic Record';
+        (document.getElementById('edu-id') as HTMLInputElement).value = data.id || '';
+        (document.getElementById('edu-degree') as HTMLInputElement).value = data.degree || '';
+        (document.getElementById('edu-field') as HTMLInputElement).value = data.field || '';
+        (document.getElementById('edu-institution') as HTMLInputElement).value = data.institution || '';
+        (document.getElementById('edu-location') as HTMLInputElement).value = data.location || '';
+        (document.getElementById('edu-period') as HTMLInputElement).value = data.period || '';
+        (document.getElementById('edu-status') as HTMLSelectElement).value = data.status || 'In Progress';
+        (document.getElementById('edu-details') as HTMLTextAreaElement).value = (data.details || []).join('\n');
+      } else {
+        modalTitle!.textContent = 'Add Academic Record';
+        (document.getElementById('edu-id') as HTMLInputElement).value = '';
+        (document.getElementById('edu-status') as HTMLSelectElement).value = 'In Progress';
+      }
+      modal?.classList.remove('hidden');
+    }
+
+    addBtn?.addEventListener('click', () => openModal());
+    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+    cancelBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+
+    document.querySelectorAll('.edit-edu-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const raw = btn.getAttribute('data-edu');
+        if (raw) openModal(JSON.parse(raw));
+      });
+    });
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = (document.getElementById('edu-id') as HTMLInputElement).value;
+      const degree = (document.getElementById('edu-degree') as HTMLInputElement).value;
+      const field = (document.getElementById('edu-field') as HTMLInputElement).value;
+      const institution = (document.getElementById('edu-institution') as HTMLInputElement).value;
+      const location = (document.getElementById('edu-location') as HTMLInputElement).value;
+      const period = (document.getElementById('edu-period') as HTMLInputElement).value;
+      const status = (document.getElementById('edu-status') as HTMLSelectElement).value;
+      const detailsRaw = (document.getElementById('edu-details') as HTMLTextAreaElement).value;
+
+      const details = detailsRaw.split('\n').map((s) => s.trim()).filter(Boolean);
+
+      const payload: any = {
+        degree,
+        field,
+        institution,
+        location,
+        period,
+        status,
+        details,
+      };
+      if (id) payload.id = id;
+
+      try {
+        const res = await fetch('/api/cms/education', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast(json.message || 'Education updated successfully!');
+          modal?.classList.add('hidden');
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          showToast(json.error || 'Failed to save', true);
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+      }
+    });
+  </script>
+</AdminLayout>

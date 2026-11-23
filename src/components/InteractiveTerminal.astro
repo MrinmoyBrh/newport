@@ -1,0 +1,133 @@
+---
+---
+
+<div id="terminal" class="bg-[#1D1511]/95 border border-[#E9DFCF]/12 rounded-2xl p-5 sm:p-7 shadow-2xl font-mono relative backdrop-blur-md">
+  
+  <!-- Terminal Titlebar -->
+  <div class="flex items-center justify-between pb-4 mb-4 border-b border-[#E9DFCF]/10 text-xs">
+    <div class="flex items-center space-x-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-[#9CAF88] inline-block"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-[#E9DFCF]/25 inline-block"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-[#E9DFCF]/10 inline-block"></span>
+      <span class="text-[#C9BFAF] text-[11px] ml-2">mrinmoy@resilient-node:~</span>
+    </div>
+    <div class="flex items-center space-x-3 text-[10px] text-[#C9BFAF]/60">
+      <span>SHELL: zsh</span>
+      <span>•</span>
+      <span class="text-[#9CAF88] font-semibold">STATUS: NOMINAL</span>
+    </div>
+  </div>
+
+  <!-- Terminal Output Buffer -->
+  <div id="term-output" class="text-xs sm:text-sm text-[#C9BFAF] space-y-2.5 min-h-[220px] max-h-[340px] overflow-y-auto pr-2">
+    <div>
+      <span class="text-[#9CAF88] font-bold">Mrinmoy Borah</span> <span class="text-[#E9DFCF]">[Backend Software Engineer / B.Tech CSE 2027]</span>
+    </div>
+    <div class="text-[#C9BFAF]/80">
+      Type <span class="text-[#E9DFCF] font-bold">help</span> to view available system commands, or execute <span class="text-[#E9DFCF] font-bold">contact</span> to dispatch an email.
+    </div>
+    <div class="text-[#C9BFAF]/60 text-xs">
+      Session connected to live node at 26.14°N, 91.73°E.
+    </div>
+  </div>
+
+  <!-- Terminal Input Line -->
+  <form id="term-form" class="mt-4 pt-3 border-t border-[#E9DFCF]/10 flex items-center space-x-2">
+    <label for="term-input" class="text-[#9CAF88] font-bold text-sm shrink-0">
+      mrinmoy&gt;
+    </label>
+    <input
+      id="term-input"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Type 'help', 'status', 'projects', or 'contact'..."
+      class="w-full bg-transparent text-[#E9DFCF] text-xs sm:text-sm font-mono border-none outline-none focus:ring-0 p-0 placeholder:text-[#C9BFAF]/40"
+    />
+  </form>
+
+</div>
+
+<script>
+  const termForm = document.getElementById('term-form') as HTMLFormElement;
+  const termInput = document.getElementById('term-input') as HTMLInputElement;
+  const termOutput = document.getElementById('term-output') as HTMLDivElement;
+
+  const COMMANDS: Record<string, string | (() => string)> = {
+    help: `Available commands:
+  - whoami     : Print engineer biography & role
+  - status     : Check system runtime, Redis health & BullMQ telemetry
+  - projects   : List verified architecture case studies
+  - stack      : Display verified backend technologies
+  - principles : Print the 5 core resilience axioms
+  - contact    : View direct contact coordinates & mailto link
+  - clear      : Clear terminal screen`,
+    whoami: `Mrinmoy Borah
+Role: Backend Software Engineer
+Education: B.Tech Computer Science & Engineering, Dhemaji Engineering College (2023 - 2027)
+Key Technologies: Python, PHP, Laravel, MySQL, C & C++ (Fundamentals), AWS Fundamentals, Linux, Git.`,
+    status: `[SYS STATUS: NOMINAL]
+Node: worker-01.production
+Uptime: 99.98%
+APGCL Internship: Completed (2026)
+Education: Final-Year B.Tech CSE (2027)`,
+    projects: `Key Projects:
+  1. ai-resilient-gateway: Fastify, BullMQ, Redis Circuit Breakers, SHA-256 Cache
+  2. apgcl-app: Laravel, PHP, Admin Dashboard, Auth & Email Notifications (APGCL 2026)
+  3. microbounty: Docker Container Code Runner & BullMQ Task Queuing
+  4. crop-disease-detection: Academic Research with NIT Silchar, OpenCV, Leaf Image Processing
+  5. securevault: Python Storage Engine with Relational MySQL Storage`,
+    stack: `Languages: Python, PHP, SQL, JavaScript, HTML & CSS, C & C++ (Fundamentals)
+Backend & Web: Laravel, PHP Backend, REST API Fundamentals, MySQL, Auth & Login, Admin Dashboards, Email Notifications
+Cloud & Infra: AWS Fundamentals (EC2, S3, IAM, VPC), Linux (Ubuntu)
+Developer Tools: Git & GitHub, VS Code, XAMPP, phpMyAdmin, Linux Terminal, Docker Fundamentals
+Projects: MicroBounty (Docker Containers, BullMQ, Task Queue Buffering)`,
+    principles: `Resilience Axioms:
+  01. Failure as a First-Class State (Circuit Breakers & Exponential Backoff)
+  02. Asynchronous Backpressure (BullMQ Queuing Over Synchronous Spikes)
+  03. Idempotency & Cryptographic Verifiability (SHA-256 Hashes & Redis Locks)
+  04. Zero-Trust Sandboxing (Ephemeral Disposable Containers)
+  05. Observability Over Guesswork (Structured Telemetry & Quotas)`,
+    contact: `Contact Coordinates:
+  - Email: mrinmoyborah360@gmail.com
+  - GitHub: https://github.com/MrinmoyBrh
+  - LinkedIn: https://www.linkedin.com/in/mrinmoy-borah-7771843b9/
+  - Location: Assam, India`
+  };
+
+  function appendTerminal(cmd: string, response: string) {
+    if (!termOutput) return;
+
+    const cmdLine = document.createElement('div');
+    cmdLine.className = 'text-[#9CAF88] font-bold mt-3';
+    cmdLine.textContent = `mrinmoy> ${cmd}`;
+    termOutput.appendChild(cmdLine);
+
+    const respLine = document.createElement('div');
+    respLine.className = 'whitespace-pre-wrap text-[#E9DFCF] leading-relaxed';
+    respLine.textContent = response;
+    termOutput.appendChild(respLine);
+
+    termOutput.scrollTop = termOutput.scrollHeight;
+  }
+
+  termForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const cmd = termInput.value.trim().toLowerCase();
+    termInput.value = '';
+
+    if (!cmd) return;
+
+    if (cmd === 'clear') {
+      termOutput.innerHTML = '';
+      return;
+    }
+
+    if (COMMANDS[cmd]) {
+      const resp = typeof COMMANDS[cmd] === 'function' ? (COMMANDS[cmd] as any)() : COMMANDS[cmd];
+      appendTerminal(cmd, resp);
+    } else {
+      appendTerminal(cmd, `zsh: command not found: ${cmd}. Type 'help' for available commands.`);
+    }
+  });
+</script>

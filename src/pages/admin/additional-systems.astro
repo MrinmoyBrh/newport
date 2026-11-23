@@ -1,0 +1,133 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getProjects } from '../../lib/content';
+
+export const prerender = false;
+
+const additionalProjects = await getProjects('additional', false);
+const showcaseProjects = await getProjects('showcase', false);
+---
+
+<AdminLayout title="Additional Systems Manager" subtitle="Manage applied research, storage engines, and completed GitHub repositories." activeNav="additional-systems">
+  
+  <div class="space-y-8">
+    
+    <!-- Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#202020] border border-[#343434]">
+      <div>
+        <h2 class="text-sm font-bold text-[#F5F5F5]">ADDITIONAL SYSTEMS // APPLIED RESEARCH & STORAGE</h2>
+        <p class="text-xs text-[#929292]">The 3-column engineering archives grid displayed below the main project showcase.</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/admin/projects" class="px-4 py-2 bg-[#282828] hover:bg-[#323232] border border-[#343434] text-[#F5F5F5] font-semibold text-xs rounded-lg transition-colors">
+          View All Projects
+        </a>
+        <a href="/admin/projects/new" class="px-4 py-2 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs rounded-lg transition-colors">
+          + Add Project
+        </a>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+    <!-- Additional Systems Ordering Card -->
+    <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#343434]/60">
+        <div>
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88]">Current Additional Systems Sequence</h3>
+          <p class="text-xs text-[#929292] mt-0.5">Project 01 receives prominent visual treatment (cherry accent border). Project 02 occupies middle position.</p>
+        </div>
+        <button id="save-order-btn" class="px-3.5 py-1.5 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs rounded-lg transition-colors">
+          Save Order
+        </button>
+      </div>
+
+      <div class="space-y-3" id="sortable-list">
+        {additionalProjects.map((p, idx) => (
+          <div data-id={p.id} class="p-4 rounded-xl bg-[#191919] border border-[#343434] hover:border-[#444444] flex items-center justify-between gap-4 transition-all">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-md bg-[#282828] border border-[#343434] text-[11px] font-mono text-[#929292] flex items-center justify-center font-bold">
+                0{idx + 1}
+              </span>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs font-bold text-[#F5F5F5]">{p.title}</span>
+                  {idx === 0 && (
+                    <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">
+                      PRIMARY REPO
+                    </span>
+                  )}
+                  {p.organization && (
+                    <span class="px-2 py-0.5 rounded text-[9px] font-mono text-[#929292] bg-[#282828]">
+                      {p.organization}
+                    </span>
+                  )}
+                </div>
+                <p class="text-[11px] text-[#929292] line-clamp-1 mt-0.5">{p.summary}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <a href={`/admin/projects/${p.id}`} class="px-3 py-1 bg-[#282828] hover:bg-[#343434] rounded text-xs text-[#F5F5F5] font-medium">
+                Edit
+              </a>
+              <button data-move-showcase={p.id} class="px-3 py-1 bg-[#202020] hover:bg-[#282828] border border-[#343434] rounded text-xs text-[#929292] hover:text-[#F5F5F5]">
+                Move to Showcase ↑
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Move from Showcase to Additional -->
+    <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm">
+      <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#929292] mb-3">Projects Currently in Main Showcase</h3>
+      <div class="space-y-2">
+        {showcaseProjects.map((p) => (
+          <div class="p-3 rounded-xl bg-[#191919] border border-[#343434] flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-[#F5F5F5]">{p.title}</span>
+              <span class="text-[10px] text-[#929292] ml-2 font-mono">{p.category}</span>
+            </div>
+            <button data-move-additional={p.id} class="px-2.5 py-1 bg-[#282828] hover:bg-[#343434] text-[#929292] hover:text-[#9CAF88] rounded transition-colors">
+              Move to Additional Systems ↓
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Move to Showcase
+    document.querySelectorAll('[data-move-showcase]').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-move-showcase');
+        if (!confirm('Move this project to the Main Project Showcase?')) return;
+        const res = await fetch('/api/cms/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, placement: 'showcase' }),
+        });
+        if (res.ok) window.location.reload();
+      });
+    });
+
+    // Move to Additional
+    document.querySelectorAll('[data-move-additional]').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-move-additional');
+        if (!confirm('Move this project to Additional Systems?')) return;
+        const res = await fetch('/api/cms/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, placement: 'additional' }),
+        });
+        if (res.ok) window.location.reload();
+      });
+    });
+  </script>
+
+</AdminLayout>

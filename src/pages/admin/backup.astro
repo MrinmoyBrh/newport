@@ -1,0 +1,169 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getDashboardStats } from '../../lib/content';
+
+export const prerender = false;
+
+const stats = await getDashboardStats();
+---
+
+<AdminLayout title="Backup & Disaster Recovery" subtitle="Complete PostgreSQL database export, schema migration & JSON import" activeNav="backup">
+  
+  <div class="space-y-6 max-w-4xl">
+    <!-- Header Banner -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5]">Data Portability & Vault</h2>
+        <p class="text-xs text-[#929292] mt-1">Export a complete snapshot of all normalized database tables, or restore an existing backup file.</p>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Export Card -->
+      <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 flex flex-col justify-between space-y-4">
+        <div class="space-y-3">
+          <div class="w-10 h-10 rounded-lg bg-[#9CAF88]/10 border border-[#9CAF88]/30 flex items-center justify-center text-[#9CAF88]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-[#F5F5F5]">Export Full CMS Backup (JSON)</h3>
+            <p class="text-xs text-[#929292] mt-1 leading-relaxed">
+              Downloads a timestamped, JSON archive encompassing:
+            </p>
+          </div>
+
+          <ul class="space-y-1.5 text-xs text-[#929292] font-mono">
+            <li class="flex items-center space-x-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+              <span>Hero content & orbital telemetry</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+              <span>{stats.totalProjects} Projects (Showcase + Additional Systems)</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+              <span>{stats.totalSkills} Categorized technical skills</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+              <span>Work experience, education, principles, and SEO</span>
+            </li>
+          </ul>
+        </div>
+
+        <a
+          href="/api/cms/backup"
+          download
+          class="w-full py-2.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs text-center transition-colors shadow-sm block"
+        >
+          Download Backup JSON Archive
+        </a>
+      </div>
+
+      <!-- Import / Restore Card -->
+      <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 flex flex-col justify-between space-y-4">
+        <div class="space-y-3">
+          <div class="w-10 h-10 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/30 flex items-center justify-center text-[#22C55E]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-[#F5F5F5]">Disaster Recovery Restore</h3>
+            <p class="text-xs text-[#929292] mt-1 leading-relaxed">
+              Restore portfolio content from a previously exported JSON backup file. Operates in an atomic PostgreSQL transaction.
+            </p>
+          </div>
+
+          <div id="import-dropzone" class="border border-dashed border-[#343434] hover:border-[#9CAF88] transition-colors rounded-lg p-5 text-center cursor-pointer bg-[#191919]">
+            <input type="file" id="backup-file-input" accept=".json,application/json" class="hidden" />
+            <span id="import-file-name" class="text-xs text-[#929292] block">Select .json backup file to restore</span>
+          </div>
+        </div>
+
+        <button
+          id="restore-btn"
+          disabled
+          class="w-full py-2.5 rounded-lg bg-[#282828] text-[#929292] font-bold text-xs transition-colors cursor-not-allowed"
+        >
+          Restore CMS State
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('import-dropzone');
+    const fileInput = document.getElementById('backup-file-input') as HTMLInputElement;
+    const fileNameSpan = document.getElementById('import-file-name');
+    const restoreBtn = document.getElementById('restore-btn') as HTMLButtonElement;
+    const toast = document.getElementById('status-toast');
+
+    let backupData: any = null;
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    dropzone?.addEventListener('click', () => fileInput.click());
+
+    fileInput?.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          backupData = JSON.parse(e.target?.result as string);
+          if (fileNameSpan) fileNameSpan.textContent = `Ready: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+          restoreBtn.removeAttribute('disabled');
+          restoreBtn.classList.remove('bg-[#282828]', 'text-[#929292]', 'cursor-not-allowed');
+          restoreBtn.classList.add('bg-[#22C55E]', 'hover:bg-[#16A34A]', 'text-black', 'shadow-sm');
+        } catch (err: any) {
+          showToast('Invalid JSON file format', true);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    restoreBtn?.addEventListener('click', async () => {
+      if (!backupData || !confirm('DANGER: Restoring this backup will replace current database content. Proceed with restoration?')) return;
+
+      restoreBtn.setAttribute('disabled', 'true');
+      restoreBtn.textContent = 'Restoring...';
+
+      try {
+        const res = await fetch('/api/cms/backup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backupData),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('Database restored successfully from backup!');
+          setTimeout(() => window.location.href = '/admin', 1500);
+        } else {
+          showToast(json.error || 'Restore failed', true);
+          restoreBtn.removeAttribute('disabled');
+          restoreBtn.textContent = 'Restore CMS State';
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+        restoreBtn.removeAttribute('disabled');
+        restoreBtn.textContent = 'Restore CMS State';
+      }
+    });
+  </script>
+</AdminLayout>

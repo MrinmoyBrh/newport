@@ -1,0 +1,285 @@
+---
+interface Props {
+  project?: any;
+  isNew?: boolean;
+}
+
+const { project, isNew = false } = Astro.props;
+
+const defaultValues = {
+  id: project?.id || '',
+  title: project?.title || '',
+  slug: project?.slug || '',
+  tagline: project?.tagline || '',
+  category: project?.category || 'Distributed Systems',
+  role: project?.role || 'Lead Backend Engineer',
+  organization: project?.organization || '',
+  period: project?.period || '2024',
+  placement: project?.placement || 'showcase',
+  featured: project?.featured ?? true,
+  github_url: project?.githubUrl || '',
+  live_url: project?.liveUrl || '',
+  badges: Array.isArray(project?.badges) ? project.badges.join(', ') : '',
+  summary: project?.summary || '',
+  challenge: project?.challenge || '',
+  architecture_narrative: project?.architectureNarrative || '',
+  verified_claims: Array.isArray(project?.verifiedClaims) ? project.verifiedClaims.join('\n') : '',
+  is_published: project?.is_published ?? true,
+  key_feature_1_label: project?.keyFeatures?.[0]?.label || '',
+  key_feature_1_detail: project?.keyFeatures?.[0]?.detail || '',
+  key_feature_2_label: project?.keyFeatures?.[1]?.label || '',
+  key_feature_2_detail: project?.keyFeatures?.[1]?.detail || '',
+  key_feature_3_label: project?.keyFeatures?.[2]?.label || '',
+  key_feature_3_detail: project?.keyFeatures?.[2]?.detail || '',
+};
+---
+
+<div class="space-y-6">
+  <!-- Top Action Bar -->
+  <div class="flex items-center justify-between p-4 rounded-xl bg-[#202020] border border-[#343434]">
+    <div class="flex items-center space-x-3">
+      <a href="/admin/projects" class="p-2 text-[#929292] hover:text-[#F5F5F5] rounded-lg hover:bg-[#282828] transition-colors">
+        ← Back to Projects
+      </a>
+      <span class="text-xs text-[#929292]">|</span>
+      <span class="text-xs font-mono font-bold text-[#9CAF88]">{isNew ? 'NEW_PROJECT' : defaultValues.slug}</span>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <button id="save-btn" class="px-5 py-2 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-sm shadow-[#9CAF88]/20">
+        <span>Save Project</span>
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden p-4 rounded-xl text-xs font-semibold"></div>
+
+  <form id="project-form" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left Column (8 cols) -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Core Information -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88] mb-2">Project Essentials</h3>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Project Title</label>
+          <input type="text" id="title" name="title" required value={defaultValues.title} class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-sm text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88]" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">URL Slug</label>
+            <input type="text" id="slug" name="slug" required value={defaultValues.slug} class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2 text-xs font-mono text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88]" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Category</label>
+            <select id="category" name="category" class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88]">
+              <option value="Distributed Systems" selected={defaultValues.category === 'Distributed Systems'}>Distributed Systems</option>
+              <option value="Enterprise Backend" selected={defaultValues.category === 'Enterprise Backend'}>Enterprise Backend</option>
+              <option value="Computer Vision & AI" selected={defaultValues.category === 'Computer Vision & AI'}>Computer Vision & AI</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Tagline / Subtitle</label>
+          <input type="text" id="tagline" name="tagline" value={defaultValues.tagline} class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Short Summary Description</label>
+          <textarea id="summary" name="summary" rows="3" class="w-full bg-[#191919] border border-[#343434] rounded-lg p-3 text-xs text-[#F5F5F5] leading-relaxed focus:outline-none focus:border-[#9CAF88]">{defaultValues.summary}</textarea>
+        </div>
+      </div>
+
+      <!-- Architectural Narrative & Challenge -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88] mb-2">Case Study Deep Dive</h3>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Engineering Problem & Challenge</label>
+          <textarea id="challenge" name="challenge" rows="3" class="w-full bg-[#191919] border border-[#343434] rounded-lg p-3 text-xs text-[#F5F5F5] leading-relaxed focus:outline-none focus:border-[#9CAF88]">{defaultValues.challenge}</textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Architecture Narrative</label>
+          <textarea id="architecture_narrative" name="architecture_narrative" rows="4" class="w-full bg-[#191919] border border-[#343434] rounded-lg p-3 text-xs text-[#F5F5F5] leading-relaxed focus:outline-none focus:border-[#9CAF88]">{defaultValues.architecture_narrative}</textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Verified Implementation Claims (One per line)</label>
+          <textarea id="verified_claims" name="verified_claims" rows="4" class="w-full bg-[#191919] border border-[#343434] rounded-lg p-3 text-xs text-[#F5F5F5] font-mono leading-relaxed focus:outline-none focus:border-[#9CAF88]">{defaultValues.verified_claims}</textarea>
+        </div>
+      </div>
+
+      <!-- Key Implemented Features -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88] mb-2">Key Highlight Bullets</h3>
+
+        <div class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" id="feat_1_label" placeholder="Feature 1 Title" value={defaultValues.key_feature_1_label} class="bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+            <input type="text" id="feat_1_detail" placeholder="Feature 1 Description" value={defaultValues.key_feature_1_detail} class="sm:col-span-2 bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" id="feat_2_label" placeholder="Feature 2 Title" value={defaultValues.key_feature_2_label} class="bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+            <input type="text" id="feat_2_detail" placeholder="Feature 2 Description" value={defaultValues.key_feature_2_detail} class="sm:col-span-2 bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" id="feat_3_label" placeholder="Feature 3 Title" value={defaultValues.key_feature_3_label} class="bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+            <input type="text" id="feat_3_detail" placeholder="Feature 3 Description" value={defaultValues.key_feature_3_detail} class="sm:col-span-2 bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column (4 cols) -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Placement & Visibility -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88]">Placement & Status</h3>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Portfolio Placement</label>
+          <select id="placement" name="placement" class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]">
+            <option value="showcase" selected={defaultValues.placement === 'showcase'}>Main Showcase (Top 3)</option>
+            <option value="additional" selected={defaultValues.placement === 'additional'}>Additional Systems (Archive)</option>
+            <option value="archived" selected={defaultValues.placement === 'archived'}>Hidden / Archived</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-2">
+          <input type="checkbox" id="featured" name="featured" checked={defaultValues.featured} class="rounded bg-[#191919] border-[#343434] text-[#9CAF88] focus:ring-0" />
+          <label for="featured" class="text-xs font-medium text-[#F5F5F5]">Featured Project</label>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="is_published" name="is_published" checked={defaultValues.is_published} class="rounded bg-[#191919] border-[#343434] text-[#9CAF88] focus:ring-0" />
+          <label for="is_published" class="text-xs font-medium text-[#F5F5F5]">Published & Visible on Website</label>
+        </div>
+      </div>
+
+      <!-- Metadata & External Links -->
+      <div class="bg-[#202020] border border-[#343434] rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-[#9CAF88]">Metadata & Links</h3>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Role in Project</label>
+          <input type="text" id="role" name="role" value={defaultValues.role} class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Organization / Context</label>
+          <input type="text" id="organization" name="organization" value={defaultValues.organization} placeholder="e.g. Associated with NIT Silchar" class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Period / Year</label>
+          <input type="text" id="period" name="period" value={defaultValues.period} class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">GitHub Repository URL</label>
+          <input type="url" id="github_url" name="github_url" value={defaultValues.github_url} placeholder="https://github.com/MrinmoyBrh/..." class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Live Demo URL</label>
+          <input type="url" id="live_url" name="live_url" value={defaultValues.live_url} placeholder="https://..." class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#F5F5F5] mb-1.5">Tech Badges (Comma-separated)</label>
+          <input type="text" id="badges" name="badges" value={defaultValues.badges} placeholder="Node.js, Express, Docker..." class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5]" />
+        </div>
+      </div>
+
+    </div>
+
+  </form>
+
+</div>
+
+<script define:vars={{ projectId: defaultValues.id }}>
+  const saveBtn = document.getElementById('save-btn');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg, isErr = false) {
+    toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'border', 'border-[#22C55E]/30', 'text-[#22C55E]', 'bg-[#EF4444]/10', 'border-[#EF4444]/30', 'text-[#EF4444]');
+    if (isErr) {
+      toast.classList.add('bg-[#EF4444]/10', 'border', 'border-[#EF4444]/30', 'text-[#EF4444]');
+    } else {
+      toast.classList.add('bg-[#22C55E]/10', 'border', 'border-[#22C55E]/30', 'text-[#22C55E]');
+    }
+    toast.textContent = msg;
+  }
+
+  saveBtn?.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span>Saving...</span>';
+
+    const getVal = (id) => document.getElementById(id)?.value || '';
+    const getCheck = (id) => document.getElementById(id)?.checked;
+
+    const keyFeatures = [];
+    if (getVal('feat_1_label')) keyFeatures.push({ label: getVal('feat_1_label'), detail: getVal('feat_1_detail') });
+    if (getVal('feat_2_label')) keyFeatures.push({ label: getVal('feat_2_label'), detail: getVal('feat_2_detail') });
+    if (getVal('feat_3_label')) keyFeatures.push({ label: getVal('feat_3_label'), detail: getVal('feat_3_detail') });
+
+    const verifiedClaims = getVal('verified_claims').split('\n').map((s) => s.trim()).filter(Boolean);
+
+    const payload = {
+      id: projectId || undefined,
+      title: getVal('title'),
+      slug: getVal('slug'),
+      tagline: getVal('tagline'),
+      category: getVal('category'),
+      role: getVal('role'),
+      organization: getVal('organization') || null,
+      period: getVal('period'),
+      placement: getVal('placement'),
+      featured: getCheck('featured'),
+      is_published: getCheck('is_published'),
+      github_url: getVal('github_url') || null,
+      live_url: getVal('live_url') || null,
+      badges: getVal('badges'),
+      summary: getVal('summary'),
+      challenge: getVal('challenge'),
+      architecture_narrative: getVal('architecture_narrative'),
+      verified_claims: verifiedClaims,
+      key_features: keyFeatures,
+    };
+
+    try {
+      const res = await fetch('/api/cms/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Project saved successfully!');
+        setTimeout(() => {
+          window.location.href = '/admin/projects';
+        }, 800);
+      } else {
+        showToast(data.error || 'Failed to save', true);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>Save Project</span>';
+      }
+    } catch (err) {
+      showToast(err.message, true);
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span>Save Project</span>';
+    }
+  });
+</script>

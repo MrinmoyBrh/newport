@@ -1,0 +1,128 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getProjects } from '../../../lib/content';
+
+export const prerender = false;
+
+const allProjects = await getProjects('all', false);
+---
+
+<AdminLayout title="Project Showcase & Systems" subtitle="Create, edit, reorder, and assign project placement across your portfolio." activeNav="projects">
+  
+  <div class="space-y-6">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#202020] border border-[#343434]">
+      <div>
+        <h2 class="text-sm font-bold text-[#F5F5F5]">All Verified Architecture Case Studies</h2>
+        <p class="text-xs text-[#929292]">Manage projects displayed in the main showcase and additional systems archives.</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/admin/additional-systems" class="px-4 py-2 bg-[#282828] hover:bg-[#323232] border border-[#343434] text-[#F5F5F5] font-semibold text-xs rounded-lg transition-colors">
+          Additional Systems View
+        </a>
+        <a href="/admin/projects/new" class="px-4 py-2 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-sm shadow-[#9CAF88]/20">
+          <span>+ Add New Project</span>
+        </a>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+    <!-- Projects List -->
+    <div class="space-y-4" id="projects-container">
+      {allProjects.map((p, idx) => (
+        <div data-id={p.id} class="p-5 rounded-2xl bg-[#202020] border border-[#343434] hover:border-[#444444] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm group">
+          
+          <div class="flex items-start space-x-4">
+            <div class="w-8 h-8 rounded-lg bg-[#282828] border border-[#343434] text-[#929292] font-mono text-xs flex items-center justify-center shrink-0 mt-0.5 group-hover:border-[#9CAF88] group-hover:text-[#9CAF88] transition-colors">
+              0{idx + 1}
+            </div>
+
+            <div class="space-y-1.5 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-mono font-bold text-[#F5F5F5]">{p.title}</span>
+                <span class={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${p.placement === 'showcase' ? 'bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30' : 'bg-[#282828] text-[#929292] border border-[#343434]'}`}>
+                  {p.placement === 'showcase' ? 'MAIN SHOWCASE' : 'ADDITIONAL SYSTEM'}
+                </span>
+                {p.featured && (
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">
+                    FEATURED
+                  </span>
+                )}
+                {p.is_published ? (
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#22C55E]/10 text-[#22C55E]">
+                    LIVE
+                  </span>
+                ) : (
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#F59E0B]/10 text-[#F59E0B]">
+                    DRAFT
+                  </span>
+                )}
+              </div>
+
+              <p class="text-xs text-[#929292] max-w-2xl line-clamp-2 leading-relaxed">
+                {p.summary}
+              </p>
+
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                {p.badges.slice(0, 5).map((b: string) => (
+                  <span class="px-2 py-0.5 rounded bg-[#191919] border border-[#343434] text-[10px] text-[#929292] font-mono">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center space-x-2 shrink-0 self-end md:self-center">
+            {p.githubUrl && (
+              <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" class="p-2 text-[#929292] hover:text-[#F5F5F5] rounded-lg hover:bg-[#282828] transition-colors" title="View GitHub Repository">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            )}
+
+            <a href={`/projects/${p.slug}`} target="_blank" class="p-2 text-[#929292] hover:text-[#F5F5F5] rounded-lg hover:bg-[#282828] transition-colors" title="View Public Case Study">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </a>
+
+            <a href={`/admin/projects/${p.id}`} class="px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#323232] border border-[#343434] text-xs font-semibold text-[#F5F5F5] transition-colors">
+              Edit
+            </a>
+
+            <button data-delete-id={p.id} class="p-2 text-[#929292] hover:text-[#EF4444] rounded-lg hover:bg-[#282828] transition-colors" title="Delete Project">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+
+        </div>
+      ))}
+    </div>
+
+  </div>
+
+  <script>
+    const deleteButtons = document.querySelectorAll('[data-delete-id]');
+
+    deleteButtons.forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-delete-id');
+        if (!id) return;
+        if (!confirm('Are you sure you want to delete this project? This will remove it from your portfolio.')) return;
+
+        try {
+          const res = await fetch(`/api/cms/projects?id=${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert('Failed to delete project.');
+          }
+        } catch (err: any) {
+          alert('Error: ' + err.message);
+        }
+      });
+    });
+  </script>
+
+</AdminLayout>

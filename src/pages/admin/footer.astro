@@ -1,0 +1,116 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getModuleConfig } from '../../lib/content';
+
+export const prerender = false;
+
+const footerConfig = (await getModuleConfig('footer')) || {
+  copyrightText: 'Mrinmoy Borah. Engineered with architectural precision.',
+  locationText: 'ASSAM, INDIA // UTC+5:30',
+  availabilityText: 'SYSTEM NOMINAL — READY FOR DEPLOYMENT'
+};
+---
+
+<AdminLayout title="Footer Configuration" subtitle="Copyright notice, telemetry status & time zone coordinates" activeNav="footer">
+  
+  <div class="max-w-3xl space-y-6">
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5]">Footer Global Settings</h2>
+        <p class="text-xs text-[#929292] mt-1">Configure site footer assertions, timezone indicators, and telemetry text.</p>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <form id="footer-form" class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-5 text-xs">
+      
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">COPYRIGHT STATEMENT *</label>
+        <input
+          type="text"
+          id="f-copyright"
+          required
+          value={footerConfig.copyrightText || 'Mrinmoy Borah. Engineered with architectural precision.'}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">LOCATION / TIMEZONE BADGE *</label>
+        <input
+          type="text"
+          id="f-location"
+          required
+          value={footerConfig.locationText || 'ASSAM, INDIA // UTC+5:30'}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">SYSTEM TELEMETRY / STATUS BADGE *</label>
+        <input
+          type="text"
+          id="f-availability"
+          required
+          value={footerConfig.availabilityText || 'SYSTEM NOMINAL — READY FOR DEPLOYMENT'}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#22C55E] font-mono focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div class="pt-4 border-t border-[#343434] flex items-center justify-end">
+        <button
+          type="submit"
+          class="px-5 py-2.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm"
+        >
+          Save Footer Settings
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('footer-form');
+    const toast = document.getElementById('status-toast');
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const copyrightText = (document.getElementById('f-copyright') as HTMLInputElement).value;
+      const locationText = (document.getElementById('f-location') as HTMLInputElement).value;
+      const availabilityText = (document.getElementById('f-availability') as HTMLInputElement).value;
+
+      try {
+        const res = await fetch('/api/cms/modules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: 'footer',
+            data: { copyrightText, locationText, availabilityText }
+          }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('Footer settings updated successfully!');
+        } else {
+          showToast(json.error || 'Failed to save', true);
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+      }
+    });
+  </script>
+</AdminLayout>

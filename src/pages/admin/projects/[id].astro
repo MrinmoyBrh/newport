@@ -1,0 +1,18 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ProjectEditor from '../../../components/admin/ProjectEditor.astro';
+import { getProjectById } from '../../../lib/content';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const project = await getProjectById(id!);
+
+if (!project) {
+  return Astro.redirect('/admin/projects');
+}
+---
+
+<AdminLayout title={`Edit: ${project.title}`} subtitle="Configure project metadata, architectural case study, and placement." activeNav="projects">
+  <ProjectEditor project={project} isNew={false} />
+</AdminLayout>

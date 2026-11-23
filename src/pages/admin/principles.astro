@@ -1,0 +1,179 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getPrinciples } from '../../lib/content';
+
+export const prerender = false;
+
+const principles = await getPrinciples();
+---
+
+<AdminLayout title="Engineering Principles" subtitle="Architectural philosophy & design invariants" activeNav="principles">
+  
+  <div class="space-y-6">
+    <!-- Header Banner -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5] flex items-center space-x-2">
+          <span>Engineering Manifesto Invariants</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">{principles.length} Principles</span>
+        </h2>
+        <p class="text-xs text-[#929292] mt-1">Refine your core engineering philosophy, fault tolerance assertions, and code accents.</p>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <!-- Principles Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {principles.map((p: any) => (
+        <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 hover:border-[#444444] transition-all flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">
+                // {p.number}
+              </span>
+              <button
+                class="edit-principle-btn px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#343434] text-xs text-[#F5F5F5] border border-[#343434] transition-colors"
+                data-p={JSON.stringify(p)}
+              >
+                Edit Principle
+              </button>
+            </div>
+
+            <div>
+              <h3 class="text-base font-bold text-[#F5F5F5] leading-snug">{p.title}</h3>
+              <p class="text-xs text-[#9CAF88] font-mono mt-0.5">{p.summary}</p>
+            </div>
+
+            <p class="text-xs text-[#929292] leading-relaxed">{p.narrative}</p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#343434]/60">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[#929292] block mb-1">Code Accent / Rule:</span>
+            <code class="px-2.5 py-1 rounded bg-[#161616] border border-[#343434] font-mono text-[11px] text-[#22C55E] block truncate">
+              {p.implementation}
+            </code>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Modal Editor -->
+    <div id="principle-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#191919] border border-[#343434] rounded-xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+        <div class="p-4 border-b border-[#343434] flex items-center justify-between">
+          <h3 id="modal-title" class="text-sm font-bold text-[#F5F5F5]">Edit Engineering Principle</h3>
+          <button id="close-modal-btn" class="p-1 text-[#929292] hover:text-[#F5F5F5]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="principle-form" class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs flex-1">
+          <input type="hidden" id="p-id" name="id" />
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">PRINCIPLE NUMBER</label>
+            <input type="text" id="p-number" readonly class="w-full bg-[#161616] border border-[#343434] rounded-lg px-3 py-2 text-[#929292] font-mono focus:outline-none cursor-not-allowed" />
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">TITLE *</label>
+            <input type="text" id="p-title" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">SUBTITLE / SHORT SUMMARY *</label>
+            <input type="text" id="p-summary" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">FULL NARRATIVE DESCRIPTION *</label>
+            <textarea id="p-narrative" rows="4" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#F5F5F5] leading-relaxed focus:border-[#9CAF88] focus:outline-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1">CODE ACCENT / TECHNICAL ASSERTION *</label>
+            <input type="text" id="p-implementation" required class="w-full bg-[#202020] border border-[#343434] rounded-lg px-3 py-2 text-[#22C55E] font-mono focus:border-[#9CAF88] focus:outline-none" />
+          </div>
+
+          <div class="pt-3 border-t border-[#343434] flex items-center justify-end space-x-2">
+            <button type="button" id="cancel-modal-btn" class="px-4 py-2 rounded-lg bg-[#282828] hover:bg-[#343434] text-xs text-[#929292] font-medium transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm">
+              Update Principle
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('principle-modal');
+    const form = document.getElementById('principle-form') as HTMLFormElement;
+    const toast = document.getElementById('status-toast');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    function openModal(p: any) {
+      (document.getElementById('p-id') as HTMLInputElement).value = p.id;
+      (document.getElementById('p-number') as HTMLInputElement).value = p.number;
+      (document.getElementById('p-title') as HTMLInputElement).value = p.title;
+      (document.getElementById('p-summary') as HTMLInputElement).value = p.summary;
+      (document.getElementById('p-narrative') as HTMLTextAreaElement).value = p.narrative;
+      (document.getElementById('p-implementation') as HTMLInputElement).value = p.implementation;
+      modal?.classList.remove('hidden');
+    }
+
+    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+    cancelBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+
+    document.querySelectorAll('.edit-principle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const raw = btn.getAttribute('data-p');
+        if (raw) openModal(JSON.parse(raw));
+      });
+    });
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = (document.getElementById('p-id') as HTMLInputElement).value;
+      const title = (document.getElementById('p-title') as HTMLInputElement).value;
+      const summary = (document.getElementById('p-summary') as HTMLInputElement).value;
+      const narrative = (document.getElementById('p-narrative') as HTMLTextAreaElement).value;
+      const implementation = (document.getElementById('p-implementation') as HTMLInputElement).value;
+
+      try {
+        const res = await fetch('/api/cms/principles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, title, summary, narrative, implementation }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('Principle saved successfully!');
+          modal?.classList.add('hidden');
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          showToast(json.error || 'Failed to save', true);
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+      }
+    });
+  </script>
+</AdminLayout>

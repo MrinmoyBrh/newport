@@ -1,0 +1,154 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getModuleConfig } from '../../lib/content';
+
+export const prerender = false;
+
+const termConfig = (await getModuleConfig('terminal')) || {
+  title: 'INTERACTIVE TERMINAL // CLIENT INGRESS',
+  promptPrefix: 'mrinmoy>',
+  welcomeMessage: 'MB-TERM v1.0.4 - Connected to live portfolio node worker-01.production\nType "help" to inspect verified architectural coordinates.',
+  contactEmail: 'mrinmoyborah360@gmail.com',
+  githubUrl: 'https://github.com/MrinmoyBrh',
+  linkedinUrl: 'https://www.linkedin.com/in/mrinmoy-borah-7771843b9/'
+};
+---
+
+<AdminLayout title="Terminal Configuration" subtitle="Command line ingress, welcome message & command responses" activeNav="terminal">
+  
+  <div class="max-w-3xl space-y-6">
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5]">Interactive Terminal Module</h2>
+        <p class="text-xs text-[#929292] mt-1">Configure the prompt prefix, banner output, and direct contact bindings.</p>
+      </div>
+      <a href="/#terminal" target="_blank" class="px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#343434] text-xs text-[#F5F5F5] border border-[#343434] transition-colors self-start md:self-auto flex items-center space-x-1.5">
+        <span>View on Site</span>
+        <svg class="w-3.5 h-3.5 text-[#9CAF88]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+      </a>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <form id="term-form" class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-5 text-xs">
+      
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">TERMINAL SECTION TITLE *</label>
+        <input
+          type="text"
+          id="term-title"
+          required
+          value={termConfig.title}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">COMMAND PROMPT PREFIX *</label>
+        <input
+          type="text"
+          id="term-prompt"
+          required
+          value={termConfig.promptPrefix || 'mrinmoy>'}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#22C55E] font-mono focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="block text-[#929292] font-mono text-[11px] mb-1.5">WELCOME BANNER MESSAGE (Supports multi-line)</label>
+        <textarea
+          id="term-welcome"
+          rows="4"
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono text-[11px] leading-relaxed focus:border-[#9CAF88] focus:outline-none"
+        >{termConfig.welcomeMessage}</textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">TERMINAL EMAIL TARGET</label>
+          <input
+            type="email"
+            id="term-email"
+            value={termConfig.contactEmail || ''}
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+          />
+        </div>
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">GITHUB URL BINDING</label>
+          <input
+            type="url"
+            id="term-github"
+            value={termConfig.githubUrl || ''}
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+          />
+        </div>
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">LINKEDIN URL BINDING</label>
+          <input
+            type="url"
+            id="term-linkedin"
+            value={termConfig.linkedinUrl || ''}
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-[#343434] flex items-center justify-end">
+        <button
+          type="submit"
+          class="px-5 py-2.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm"
+        >
+          Save Terminal Settings
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('term-form');
+    const toast = document.getElementById('status-toast');
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = (document.getElementById('term-title') as HTMLInputElement).value;
+      const promptPrefix = (document.getElementById('term-prompt') as HTMLInputElement).value;
+      const welcomeMessage = (document.getElementById('term-welcome') as HTMLTextAreaElement).value;
+      const contactEmail = (document.getElementById('term-email') as HTMLInputElement).value;
+      const githubUrl = (document.getElementById('term-github') as HTMLInputElement).value;
+      const linkedinUrl = (document.getElementById('term-linkedin') as HTMLInputElement).value;
+
+      try {
+        const res = await fetch('/api/cms/modules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: 'terminal',
+            data: { title, promptPrefix, welcomeMessage, contactEmail, githubUrl, linkedinUrl }
+          }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('Terminal settings updated successfully!');
+        } else {
+          showToast(json.error || 'Failed to save', true);
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+      }
+    });
+  </script>
+</AdminLayout>

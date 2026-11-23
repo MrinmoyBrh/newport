@@ -1,0 +1,81 @@
+---
+import { getModuleConfig } from '../lib/content';
+
+const currentYear = new Date().getFullYear();
+
+let footerConfig = {
+  copyrightText: 'Mrinmoy Borah. Engineered with architectural precision.',
+  locationText: 'ASSAM, INDIA // UTC+5:30',
+  availabilityText: 'SYSTEM NOMINAL — READY FOR DEPLOYMENT'
+};
+
+try {
+  const dbFooter = await getModuleConfig('footer');
+  if (dbFooter) footerConfig = { ...footerConfig, ...dbFooter };
+} catch (e) {
+  // Fallback
+}
+---
+
+<footer class="py-12 bg-[#1D1511]/95 backdrop-blur-md border-t border-[#E9DFCF]/10 technical-mono text-xs text-[#C9BFAF] relative z-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pb-8 border-b border-[#E9DFCF]/10">
+      
+      <!-- Brand & Mission statement -->
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-[#2B1D16] border border-[#E9DFCF]/15 flex items-center justify-center text-[#9CAF88] font-bold text-xs">
+          MB
+        </div>
+        <div>
+          <span class="text-[#E9DFCF] font-bold font-display text-sm block">Mrinmoy Borah</span>
+          <span class="text-[11px] text-[#C9BFAF] block">Backend Software Engineer • Dhemaji Engineering College</span>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="flex flex-wrap items-center justify-center gap-6">
+        <a href="#systems" class="hover:text-[#9CAF88] transition-colors">Systems</a>
+        <a href="#principles" class="hover:text-[#9CAF88] transition-colors">Principles</a>
+        <a href="#architecture" class="hover:text-[#9CAF88] transition-colors">Architecture</a>
+        <a href="#skills" class="hover:text-[#9CAF88] transition-colors">Skills</a>
+        <a href="#experience" class="hover:text-[#9CAF88] transition-colors">Timeline</a>
+        <a href="#terminal" class="hover:text-[#9CAF88] transition-colors">Terminal</a>
+      </div>
+
+      <!-- Social coordinates -->
+      <div class="flex items-center space-x-4">
+        <a
+          href="https://github.com/MrinmoyBrh"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-[#9CAF88] transition-colors"
+          aria-label="GitHub Profile"
+        >
+          GitHub ↗
+        </a>
+        <a
+          href="https://www.linkedin.com/in/mrinmoy-borah-7771843b9/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-[#9CAF88] transition-colors"
+          aria-label="LinkedIn Profile"
+        >
+          LinkedIn ↗
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Bottom Colophon -->
+    <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#C9BFAF]/60">
+      <div>
+        <span>Designed with editorial typography, warm espresso tones, & verified backend engineering.</span>
+      </div>
+      <div>
+        <span>© {currentYear} {footerConfig.copyrightText}</span>
+      </div>
+    </div>
+
+  </div>
+</footer>

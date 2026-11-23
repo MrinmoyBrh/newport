@@ -1,0 +1,130 @@
+---
+import OrbitalVisual from './OrbitalVisual.astro';
+import { getHeroContent } from '../lib/content';
+
+interface Props {
+  previewDraft?: boolean;
+}
+
+const { previewDraft = false } = Astro.props;
+
+let hero: any = null;
+try {
+  hero = await getHeroContent(!previewDraft);
+} catch (e) {
+  // Fail-safe database fallback
+}
+---
+
+<section class="relative min-h-[92vh] flex items-center pt-8 sm:pt-12 pb-20 overflow-hidden border-b border-[#E9DFCF]/10">
+  
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      
+      <!-- Asymmetric Editorial Content Column (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col justify-center">
+        
+        <!-- Metadata Dossier Eyebrow -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold technical-mono bg-[#9CAF88]/15 text-[#9CAF88] border border-[#9CAF88]/30">
+            {hero?.role_badge || 'BACKEND SOFTWARE ENGINEER'}
+          </span>
+          <span class="text-[#E9DFCF]/20 hidden sm:inline" aria-hidden="true">•</span>
+          <span class="technical-mono text-xs text-[#C9BFAF]">
+            {hero?.education_badge || 'B.TECH CSE (2023 — 2027)'}
+          </span>
+          <span class="text-[#E9DFCF]/20 hidden sm:inline" aria-hidden="true">•</span>
+          <span class="technical-mono text-xs text-[#C9BFAF]/75">
+            {hero?.college_badge || 'DHEMAJI ENG. COLLEGE'}
+          </span>
+        </div>
+
+        <!-- Massive Hero Headline in Neoradical Brush Lettering -->
+        <h1 class="font-brush text-4xl sm:text-6xl lg:text-7xl text-[#E9DFCF] tracking-wide leading-[1.12] sm:leading-[1.1] mb-6">
+          <span class="block">{hero?.headline_line1 || 'Architecting'}</span>
+          <span class="block text-[#E9DFCF]">{hero?.headline_highlight || 'fault-tolerant'}</span>
+          <span class="block">
+            <span class="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#E9DFCF] via-[#9CAF88] to-[#C9BFAF] pb-1">
+              {hero?.headline_gradient || 'backends.'}
+            </span>
+          </span>
+        </h1>
+
+        <!-- High-Impact Technical Mission Statement (Manrope font) -->
+        {hero?.description_html ? (
+          <p class="paragraph-manrope font-manrope text-[17px] sm:text-[18px] lg:text-[19.5px] text-[#C9BFAF] font-normal leading-[1.7] tracking-[-0.01em] max-w-2xl mb-8" set:html={hero.description_html} />
+        ) : (
+          <p class="paragraph-manrope font-manrope text-[17px] sm:text-[18px] lg:text-[19.5px] text-[#C9BFAF] font-normal leading-[1.7] tracking-[-0.01em] max-w-2xl mb-8">
+            I focus on building reliable backend applications, designing APIs, and working with databases and cloud technologies. My experience includes developing web applications with <strong class="text-[#E9DFCF] font-medium">Laravel, PHP, Python, and MySQL</strong>, along with exploring <strong class="text-[#E9DFCF] font-medium">Linux, AWS</strong>, and backend system architecture. I enjoy solving practical engineering problems, understanding how systems work behind the scenes, and writing clean, maintainable code.
+          </p>
+        )}
+
+        <!-- Engineering Proof Strip (Warm Brown Translucent Card) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 p-5 rounded-2xl bg-[#403027]/40 border border-[#E9DFCF]/10 backdrop-blur-md max-w-xl mb-8 shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+          <div class="border-l-2 border-[#9CAF88] pl-3.5">
+            <span class="block text-xs technical-mono text-[#C9BFAF]">PRIMARY ARCHITECTURE</span>
+            <span class="block text-sm font-semibold text-[#E9DFCF] font-display mt-0.5">Asynchronous Queues</span>
+            <span class="block text-[11px] text-[#C9BFAF]/70 technical-mono">BullMQ + Redis Clusters</span>
+          </div>
+
+          <div class="border-l-2 border-[#9CAF88]/70 pl-3.5">
+            <span class="block text-xs technical-mono text-[#C9BFAF]">FAILOVER DEFENSE</span>
+            <span class="block text-sm font-semibold text-[#E9DFCF] font-display mt-0.5">Circuit Breakers</span>
+            <span class="block text-[11px] text-[#C9BFAF]/70 technical-mono">Redis State Machines</span>
+          </div>
+
+          <div class="border-l-2 border-[#E9DFCF]/30 pl-3.5 col-span-2 sm:col-span-1">
+            <span class="block text-xs technical-mono text-[#C9BFAF]">VERIFIED CODE</span>
+            <span class="block text-sm font-semibold text-[#E9DFCF] font-display mt-0.5">Open Source Systems</span>
+            <span class="block text-[11px] text-[#C9BFAF]/70 technical-mono">Fastify, Laravel, Python</span>
+          </div>
+        </div>
+
+        <!-- Action CTAs -->
+        <div class="flex flex-wrap items-center gap-4">
+          <a
+            href={hero?.cta_primary_url || '#systems'}
+            class="px-6 py-3.5 rounded-full bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold font-display text-sm transition-all duration-200 shadow-[0_4px_20px_rgba(156,175,136,0.3)] flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9CAF88]"
+          >
+            <span>{hero?.cta_primary_label || 'Explore Verified Systems'}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </a>
+
+          <a
+            href={hero?.cta_secondary_url || '#architecture'}
+            class="px-6 py-3.5 rounded-full bg-[#2B1D16]/75 hover:bg-[#403027] text-[#E9DFCF] hover:text-[#9CAF88] font-medium font-display text-sm border border-[#E9DFCF]/20 hover:border-[#9CAF88]/50 transition-all duration-200 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9CAF88]"
+          >
+            <span class="w-2 h-2 rounded-full bg-[#9CAF88]"></span>
+            <span>{hero?.cta_secondary_label || 'Interactive Architecture'}</span>
+          </a>
+
+          <a
+            href={hero?.cta_terminal_url || '#terminal'}
+            class="px-4 py-3.5 rounded-full bg-transparent hover:bg-[#E9DFCF]/5 text-[#C9BFAF] hover:text-[#E9DFCF] technical-mono text-xs border border-transparent hover:border-[#E9DFCF]/15 transition-colors flex items-center space-x-2"
+          >
+            <span class="text-[#9CAF88]">$</span>
+            <span>{hero?.cta_terminal_label || 'launch --terminal'}</span>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Orbital Systems Illustration Column (5 cols) -->
+      <div class="lg:col-span-5 flex items-center justify-center relative">
+        <OrbitalVisual hero={hero} />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Editorial bottom coordinate marker -->
+  <div class="absolute bottom-3 left-8 hidden lg:flex items-center space-x-6 technical-mono text-[11px] text-[#C9BFAF]/40" aria-hidden="true">
+    <span>LOC // ASSAM, INDIA (IST / UTC+5:30)</span>
+    <span>•</span>
+    <span>SYS // RESILIENT-GATEWAY-V2</span>
+    <span>•</span>
+    <span>STATUS // ALL SYSTEMS FUNCTIONAL</span>
+  </div>
+</section>

@@ -1,0 +1,86 @@
+---
+import { principles as defaultPrinciples } from '../data/principles';
+import { getPrinciples } from '../lib/content';
+
+let principles = defaultPrinciples;
+try {
+  const dbPrinciples = await getPrinciples();
+  if (dbPrinciples && dbPrinciples.length > 0) {
+    principles = dbPrinciples.map((p: any) => ({
+      number: p.number,
+      title: p.title,
+      subtitle: p.summary,
+      description: p.narrative,
+      codeAccent: p.implementation,
+    }));
+  }
+} catch (e) {
+  // Fail-safe database fallback
+}
+---
+
+<section id="principles" class="py-24 sm:py-32 border-b border-[#E9DFCF]/10 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Editorial Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 sm:mb-20 pb-8 border-b border-[#E9DFCF]/10 gap-6">
+      <div class="max-w-3xl">
+        <div class="flex items-center space-x-3 technical-mono text-xs text-[#9CAF88] mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-pulse"></span>
+          <span class="tracking-widest uppercase">ENGINEERING PHILOSOPHY // SYSTEM AXIOMS</span>
+        </div>
+        <h2 class="font-brush text-4xl sm:text-5xl lg:text-6xl text-[#E9DFCF] tracking-wide">
+          Axioms of <span class="font-script text-[#C9BFAF] font-normal text-[1.08em]">Resilience.</span>
+        </h2>
+      </div>
+      <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] lg:text-[18px] text-[#C9BFAF] max-w-md leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] font-normal">
+        Reliable backend systems aren't built on wishful optimism; they are forged by assuming networks drop, processes crash, and upstream APIs degrade.
+      </p>
+    </div>
+
+    <!-- Staggered Editorial Manifesto List -->
+    <div class="space-y-0 divide-y divide-[#E9DFCF]/10">
+      {principles.map((principle) => (
+        <article class="py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start group hover:bg-[#2B1D16]/30 transition-colors px-4 sm:px-6 -mx-4 sm:-mx-6 rounded-2xl">
+          
+          <!-- Large Editorial Number (2 cols) -->
+          <div class="lg:col-span-2 flex items-baseline justify-between lg:block">
+            <span class="editorial-title text-5xl sm:text-6xl lg:text-7xl font-bold text-[#E9DFCF]/20 group-hover:text-[#9CAF88] transition-colors duration-300 block select-none">
+              {principle.number}
+            </span>
+            <span class="lg:hidden technical-mono text-xs text-[#9CAF88] font-semibold uppercase tracking-wider">
+              {principle.subtitle}
+            </span>
+          </div>
+
+          <!-- Principle Narrative (7 cols) -->
+          <div class="lg:col-span-7">
+            <div class="hidden lg:flex items-center space-x-2 text-xs technical-mono text-[#9CAF88] mb-2 uppercase tracking-widest font-semibold">
+              <span>// {principle.subtitle}</span>
+            </div>
+            
+            <h3 class="font-brush text-2xl sm:text-3xl lg:text-4xl text-[#E9DFCF] mb-4 group-hover:text-[#9CAF88] transition-colors leading-snug">
+              {principle.title}
+            </h3>
+
+            <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] font-normal">
+              {principle.description}
+            </p>
+          </div>
+
+          <!-- Technical Verification Formula (3 cols) -->
+          <div class="lg:col-span-3 lg:pl-6 lg:border-l lg:border-[#E9DFCF]/10 pt-2">
+            <span class="block technical-mono text-[10px] text-[#C9BFAF]/60 uppercase tracking-wider mb-2">
+              IMPLEMENTATION INVARIANT
+            </span>
+            <code class="block technical-mono text-xs text-[#E9DFCF] bg-[#2B1D16]/80 p-3.5 border border-[#E9DFCF]/12 rounded-xl leading-snug break-all font-mono">
+              {principle.codeAccent}
+            </code>
+          </div>
+
+        </article>
+      ))}
+    </div>
+
+  </div>
+</section>

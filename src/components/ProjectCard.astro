@@ -1,0 +1,94 @@
+---
+import type { ProjectCaseStudy } from '../data/projects';
+
+interface Props {
+  project: ProjectCaseStudy;
+  index: number;
+}
+
+const { project, index } = Astro.props;
+const displayIndex = String(index + 1).padStart(2, '0');
+
+const tagLabel = project.organization
+  ? (project.organization.includes('Assam') ? 'APGCL_INTERN' : 'NIT_SILCHAR')
+  : (project.githubUrl ? 'OPEN_SRC' : 'SYSTEM_NODE');
+---
+
+<article
+  class="group relative bg-[#2B1D16]/65 border border-[#E9DFCF]/10 hover:border-[#9CAF88]/50 rounded-2xl transition-all duration-300 p-6 sm:p-7 flex flex-col justify-between backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.45)] hover:-translate-y-1"
+>
+  <div>
+    <!-- Header Bar -->
+    <div class="flex items-center justify-between pb-3 mb-5 border-b border-[#E9DFCF]/10 technical-mono text-[11px]">
+      <div class="flex items-center space-x-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88] inline-block"></span>
+        <span class="text-[#9CAF88] font-bold tracking-wider">SYS_{displayIndex}</span>
+        <span class="text-[#E9DFCF]/20">//</span>
+        <span class="text-[#C9BFAF] uppercase">{project.category}</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="border border-[#E9DFCF]/15 px-2 py-0.5 bg-[#1D1511] rounded-full text-[10px] text-[#C9BFAF]">
+          {tagLabel}
+        </span>
+      </div>
+    </div>
+
+    <!-- Title & Headline -->
+    <h3 class="font-display text-xl sm:text-2xl font-bold text-[#E9DFCF] group-hover:text-[#9CAF88] transition-colors mb-3 leading-snug">
+      <a href={`/projects/${project.slug}`} class="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]">
+        {project.title}
+      </a>
+    </h3>
+
+    <!-- Human-written Summary -->
+    <p class="text-xs sm:text-sm text-[#C9BFAF] leading-relaxed mb-6 font-normal">
+      {project.summary}
+    </p>
+
+    <!-- Technical Architecture Highlights -->
+    <div class="mb-6 p-4 bg-[#1D1511]/80 border-l-2 border-[#9CAF88] border-y border-r border-[#E9DFCF]/5 rounded-xl space-y-2">
+      <div class="text-[10px] technical-mono uppercase tracking-wider text-[#C9BFAF]/70 font-semibold mb-1">
+        Key implementation details:
+      </div>
+      {project.verifiedClaims.slice(0, 3).map((claim) => (
+        <div class="flex items-start space-x-2 text-xs text-[#C9BFAF]">
+          <span class="text-[#9CAF88] technical-mono text-[11px] shrink-0 font-bold">&gt;</span>
+          <span class="leading-tight text-[11px] technical-mono">{claim}</span>
+        </div>
+      ))}
+    </div>
+
+    <!-- Rounded Tech Tags -->
+    <div class="flex flex-wrap gap-1.5 mb-6 technical-mono text-[11px]">
+      {project.badges.map((badge) => (
+        <span class="px-2.5 py-0.5 bg-[#403027]/70 text-[#C9BFAF] hover:text-[#E9DFCF] rounded-full transition-colors border border-[#E9DFCF]/10">
+          {badge}
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <!-- Action Footer -->
+  <div class="pt-4 border-t border-[#E9DFCF]/10 flex items-center justify-between text-xs technical-mono">
+    <a
+      href={`/projects/${project.slug}`}
+      class="inline-flex items-center space-x-1.5 text-[#E9DFCF] hover:text-[#9CAF88] font-medium transition-colors"
+    >
+      <span>Case study</span>
+      <span class="transform group-hover:translate-x-1 transition-transform text-[#9CAF88]">&rarr;</span>
+    </a>
+
+    {project.githubUrl && (
+      <a
+        href={project.githubUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-[#C9BFAF] hover:text-[#E9DFCF] transition-colors flex items-center space-x-1 text-[11px]"
+      >
+        <span>source</span>
+        <span>&nearr;</span>
+      </a>
+    )}
+  </div>
+
+</article>

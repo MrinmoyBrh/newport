@@ -1,0 +1,220 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getSeoSettings } from '../../lib/content';
+
+export const prerender = false;
+
+const seo = await getSeoSettings();
+---
+
+<AdminLayout title="SEO & OpenGraph Settings" subtitle="Search engine metadata, social share cards & crawl directives" activeNav="seo">
+  
+  <div class="space-y-6 max-w-4xl">
+    <!-- Header Banner -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5]">Search Engine Optimization</h2>
+        <p class="text-xs text-[#929292] mt-1">Configure global meta tags, OpenGraph sharing previews, and crawler directives.</p>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <!-- Google Search Live Snippet Preview -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6">
+      <h3 class="text-xs font-mono uppercase tracking-wider text-[#929292] font-semibold mb-3">SERP Live Snippet Preview</h3>
+      
+      <div class="bg-[#181818] border border-[#343434] rounded-lg p-4 font-sans space-y-1">
+        <div class="text-[11px] text-[#929292] font-mono flex items-center space-x-1.5">
+          <span class="w-3.5 h-3.5 rounded-full bg-[#9CAF88] inline-block text-[8px] font-bold text-black text-center leading-3">MB</span>
+          <span id="serp-url" class="truncate">{seo.canonical_url || 'https://mrinmoybrh.github.io'}</span>
+        </div>
+        <div id="serp-title" class="text-sm font-semibold text-[#60A5FA] hover:underline cursor-pointer truncate">
+          {seo.site_title || 'Mrinmoy Borah | Backend Software Engineer'}
+        </div>
+        <div id="serp-desc" class="text-xs text-[#CCCCCC] leading-relaxed line-clamp-2">
+          {seo.site_description || 'Personal portfolio of Mrinmoy Borah, Backend Software Engineer specializing in resilient architectures and distributed systems.'}
+        </div>
+      </div>
+    </div>
+
+    <!-- SEO Edit Form -->
+    <form id="seo-form" class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-5 text-xs">
+      
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-[#929292] font-mono text-[11px]">SITE META TITLE *</label>
+          <span id="title-counter" class="text-[10px] font-mono text-[#929292]">0 / 60 chars</span>
+        </div>
+        <input
+          type="text"
+          id="seo-title"
+          required
+          value={seo.site_title || ''}
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-[#929292] font-mono text-[11px]">SITE META DESCRIPTION *</label>
+          <span id="desc-counter" class="text-[10px] font-mono text-[#929292]">0 / 160 chars</span>
+        </div>
+        <textarea
+          id="seo-desc"
+          rows="3"
+          required
+          class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] leading-relaxed focus:border-[#9CAF88] focus:outline-none"
+        >{seo.site_description || ''}</textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">CANONICAL BASE URL *</label>
+          <input
+            type="url"
+            id="seo-url"
+            required
+            value={seo.canonical_url || 'https://mrinmoybrh.github.io'}
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+          />
+        </div>
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">ROBOTS DIRECTIVE</label>
+          <select id="seo-robots" class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none">
+            <option value="index, follow" selected={seo.robots_directives === 'index, follow'}>index, follow (Default / Searchable)</option>
+            <option value="noindex, nofollow" selected={seo.robots_directives === 'noindex, nofollow'}>noindex, nofollow (Hidden from Engines)</option>
+            <option value="index, nofollow" selected={seo.robots_directives === 'index, nofollow'}>index, nofollow</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- OpenGraph Social Tags -->
+      <div class="pt-4 border-t border-[#343434] space-y-4">
+        <h3 class="text-xs font-mono uppercase tracking-wider text-[#929292] font-semibold">OpenGraph & Twitter Card</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1.5">OG TITLE</label>
+            <input
+              type="text"
+              id="og-title"
+              value={seo.og_title || ''}
+              class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-[#929292] font-mono text-[11px] mb-1.5">TWITTER CARD TYPE</label>
+            <select id="og-card" class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none">
+              <option value="summary_large_image" selected={seo.twitter_card === 'summary_large_image'}>summary_large_image (Recommended)</option>
+              <option value="summary" selected={seo.twitter_card === 'summary'}>summary</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">OG DESCRIPTION</label>
+          <textarea
+            id="og-desc"
+            rows="2"
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] leading-relaxed focus:border-[#9CAF88] focus:outline-none"
+          >{seo.og_description || ''}</textarea>
+        </div>
+
+        <div>
+          <label class="block text-[#929292] font-mono text-[11px] mb-1.5">OG IMAGE URL (Share Banner)</label>
+          <input
+            type="text"
+            id="og-image"
+            value={seo.og_image || ''}
+            placeholder="/uploads/og-banner.png or full URL"
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3.5 py-2.5 text-[#F5F5F5] font-mono focus:border-[#9CAF88] focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-[#343434] flex items-center justify-end">
+        <button
+          type="submit"
+          class="px-5 py-2.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm"
+        >
+          Save SEO Settings
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('seo-form');
+    const toast = document.getElementById('status-toast');
+
+    const titleInput = document.getElementById('seo-title') as HTMLInputElement;
+    const descInput = document.getElementById('seo-desc') as HTMLTextAreaElement;
+    const urlInput = document.getElementById('seo-url') as HTMLInputElement;
+
+    const serpTitle = document.getElementById('serp-title');
+    const serpDesc = document.getElementById('serp-desc');
+    const serpUrl = document.getElementById('serp-url');
+
+    const titleCounter = document.getElementById('title-counter');
+    const descCounter = document.getElementById('desc-counter');
+
+    function syncSerp() {
+      if (serpTitle) serpTitle.textContent = titleInput.value || 'Title';
+      if (serpDesc) serpDesc.textContent = descInput.value || 'Description';
+      if (serpUrl) serpUrl.textContent = urlInput.value || 'https://...';
+
+      if (titleCounter) titleCounter.textContent = `${titleInput.value.length} / 60 chars`;
+      if (descCounter) descCounter.textContent = `${descInput.value.length} / 160 chars`;
+    }
+
+    titleInput?.addEventListener('input', syncSerp);
+    descInput?.addEventListener('input', syncSerp);
+    urlInput?.addEventListener('input', syncSerp);
+    syncSerp();
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        site_title: titleInput.value,
+        site_description: descInput.value,
+        canonical_url: urlInput.value,
+        robots_directives: (document.getElementById('seo-robots') as HTMLSelectElement).value,
+        og_title: (document.getElementById('og-title') as HTMLInputElement).value,
+        og_description: (document.getElementById('og-desc') as HTMLTextAreaElement).value,
+        twitter_card: (document.getElementById('og-card') as HTMLSelectElement).value,
+        og_image: (document.getElementById('og-image') as HTMLInputElement).value,
+      };
+
+      try {
+        const res = await fetch('/api/cms/seo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('SEO settings updated successfully!');
+        } else {
+          showToast(json.error || 'Failed to save', true);
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+      }
+    });
+  </script>
+</AdminLayout>

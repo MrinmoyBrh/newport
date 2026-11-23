@@ -1,0 +1,35 @@
+{
+  "name": "mrinmoy-borah-portfolio-v2",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "test:security": "node --experimental-strip-types scripts/test-security.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9.5.5",
+    "@astrojs/tailwind": "^5.1.5",
+    "@astrojs/vercel": "^8.2.11",
+    "@lucide/astro": "^1.77.0",
+    "@neon/config": "^1.14.5",
+    "@neon/env": "^2.1.8",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.23.1",
+    "astro": "^5.4.2",
+    "bcryptjs": "^3.0.3",
+    "hash-wasm": "^4.13.0",
+    "lucide-astro": "^0.556.0",
+    "pg": "^8.23.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5"
+  }
+}

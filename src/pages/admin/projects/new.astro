@@ -1,0 +1,10 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ProjectEditor from '../../../components/admin/ProjectEditor.astro';
+
+export const prerender = false;
+---
+
+<AdminLayout title="Add New Project" subtitle="Add a new engineering case study to your portfolio." activeNav="projects">
+  <ProjectEditor isNew={true} />
+</AdminLayout>

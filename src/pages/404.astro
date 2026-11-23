@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="404: Node Not Found | Mrinmoy Borah"
+  description="The requested routing endpoint does not exist in the system cluster."
+>
+  <Header />
+
+  <main id="main-content" class="min-h-[75vh] flex items-center justify-center py-20">
+    <div class="max-w-md mx-auto px-4 text-center">
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#9CAF88]/15 border border-[#9CAF88]/30 text-[#9CAF88] technical-mono text-xs mb-6">
+        <span>ERROR CODE // HTTP 404</span>
+      </div>
+
+      <h1 class="font-brush text-4xl sm:text-5xl text-[#E9DFCF] mb-4 leading-snug">
+        Endpoint Missing.
+      </h1>
+
+      <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] mb-8">
+        The requested routing node has been decommissioned, partitioned, or never existed in the cluster topology.
+      </p>
+
+      <div class="p-5 rounded-2xl bg-[#2B1D16]/80 border border-[#E9DFCF]/12 technical-mono text-xs text-[#C9BFAF] text-left mb-8 space-y-1.5 shadow-xl">
+        <div class="text-[#E9DFCF] font-semibold">FATAL: Route lookup failed</div>
+        <div>status: 404 Not Found</div>
+        <div>upstream: gateway.cluster.local</div>
+        <div class="text-[#9CAF88]">suggested_action: redirect to /</div>
+      </div>
+
+      <a
+        href="/"
+        class="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold technical-mono text-xs transition-colors shadow-[0_4px_20px_rgba(156,175,136,0.3)]"
+      >
+        <span>← Return to System Core</span>
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

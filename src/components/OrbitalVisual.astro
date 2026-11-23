@@ -1,0 +1,149 @@
+---
+interface Props {
+  hero?: any;
+}
+const { hero = null } = Astro.props;
+---
+
+<div class="relative w-full max-w-[500px] lg:max-w-[540px] mx-auto flex flex-col items-center select-none" aria-label="Distributed backend architecture orbital diagram">
+  
+  <!-- Orbital Systems Canvas Container -->
+  <div class="relative w-full aspect-square flex items-center justify-center">
+    <!-- Outer Glow Backdrop in Sage Green -->
+    <div class="absolute inset-0 rounded-full bg-[#9CAF88]/10 blur-3xl pointer-events-none"></div>
+
+    <!-- SVG Orbital Systems Canvas -->
+    <svg
+      class="w-full h-full relative z-10 overflow-visible"
+      viewBox="0 0 500 500"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Orbital architecture diagram showing API gateway, BullMQ queue, Redis cache, and telemetry"
+    >
+    <defs>
+      <!-- Gradients in Sage Green & Oat -->
+      <radialGradient id="coreGlowV2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#9CAF88" stop-opacity="0.75"/>
+        <stop offset="60%" stop-color="#9CAF88" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#9CAF88" stop-opacity="0"/>
+      </radialGradient>
+      
+      <linearGradient id="orbitalSageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#9CAF88" stop-opacity="0.8"/>
+        <stop offset="50%" stop-color="#9CAF88" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#B1C2A0" stop-opacity="0.6"/>
+      </linearGradient>
+
+      <filter id="glowEffectV2" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+
+    <!-- Center Coordinates Crosshairs in Muted Oat -->
+    <line x1="250" y1="20" x2="250" y2="480" stroke="#E9DFCF" stroke-opacity="0.08" stroke-dasharray="2 4" />
+    <line x1="20" y1="250" x2="480" y2="250" stroke="#E9DFCF" stroke-opacity="0.08" stroke-dasharray="2 4" />
+
+    <!-- ORBIT 3: Outer Ring (Persistence & Telemetry, r=215) -->
+    <g class="animate-orbit-slow" style="transform-origin: 250px 250px;">
+      <circle cx="250" cy="250" r="215" stroke="#E9DFCF" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="4 6" />
+      
+      <!-- Outer Node: PostgreSQL / Audit Store -->
+      <g transform="translate(465, 250)">
+        <circle r="14" fill="#2B1D16" stroke="#9CAF88" stroke-width="1.5" />
+        <circle r="5" fill="#9CAF88" />
+      </g>
+      
+      <!-- Outer Node: Redis PubSub / SSE Stream -->
+      <g transform="translate(35, 250)">
+        <circle r="12" fill="#2B1D16" stroke="#C9BFAF" stroke-width="1.5" />
+        <circle r="4" fill="#E9DFCF" />
+      </g>
+    </g>
+
+    <!-- Static Label Placements for Outer Orbit (Readable orientation) -->
+    <text x="465" y="278" font-family="'JetBrains Mono', monospace" font-size="9" fill="#C9BFAF" text-anchor="middle" letter-spacing="1">POSTGRESQL</text>
+    <text x="45" y="278" font-family="'JetBrains Mono', monospace" font-size="9" fill="#C9BFAF" text-anchor="middle" letter-spacing="1">PUB/SUB SSE</text>
+
+    <!-- ORBIT 2: Middle Ring (BullMQ Workers & Rate Limiter, r=150) -->
+    <g class="animate-orbit-mid" style="transform-origin: 250px 250px;">
+      <circle cx="250" cy="250" r="150" stroke="#9CAF88" stroke-opacity="0.22" stroke-width="1.2" stroke-dasharray="6 8" />
+      
+      <!-- Mid Node: BullMQ Worker Pool (Concurrency: 5) -->
+      <g transform="translate(250, 100)">
+        <circle r="16" fill="#2B1D16" stroke="#9CAF88" stroke-width="2" filter="url(#glowEffectV2)" />
+        <circle r="6" fill="#9CAF88" />
+        <!-- Satellite dot -->
+        <circle cx="18" cy="-5" r="2.5" fill="#E9DFCF" />
+      </g>
+
+      <!-- Mid Node: Sliding Rate Limiter -->
+      <g transform="translate(250, 400)">
+        <circle r="13" fill="#2B1D16" stroke="#C9BFAF" stroke-width="1.5" />
+        <circle r="4" fill="#C9BFAF" />
+      </g>
+    </g>
+
+    <!-- Static Label Placements for Mid Orbit -->
+    <text x="250" y="74" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#9CAF88" text-anchor="middle" font-weight="600" letter-spacing="1.5">BULLMQ QUEUE [C:5]</text>
+    <text x="250" y="428" font-family="'JetBrains Mono', monospace" font-size="9" fill="#C9BFAF" text-anchor="middle" letter-spacing="1">24H TOKEN QUOTA</text>
+
+    <!-- ORBIT 1: Inner Ring (SHA-256 Prompt Cache & Circuit Breakers, r=90) -->
+    <g class="animate-orbit-fast" style="transform-origin: 250px 250px;">
+      <circle cx="250" cy="250" r="90" stroke="#9CAF88" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="3 4" />
+      
+      <!-- Inner Node: Deterministic SHA-256 Cache (<5ms) -->
+      <g transform="translate(314, 186)">
+        <circle r="11" fill="#2B1D16" stroke="#9CAF88" stroke-width="1.5" />
+        <circle r="4" fill="#9CAF88" />
+      </g>
+
+      <!-- Inner Node: Circuit Breaker State (CLOSED / OPEN) -->
+      <g transform="translate(186, 314)">
+        <circle r="11" fill="#2B1D16" stroke="#E9DFCF" stroke-width="1.5" />
+        <circle r="4" fill="#C9BFAF" />
+      </g>
+    </g>
+
+    <!-- Static Labels for Inner Nodes -->
+    <text x="350" y="180" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9CAF88" text-anchor="start" letter-spacing="1">SHA-256 CACHE (&lt;5ms)</text>
+    <text x="145" y="325" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#E9DFCF" text-anchor="end" letter-spacing="1">CIRCUIT BREAKER</text>
+
+    <!-- CENTER CORE: Ingress Gateway & Dispatcher -->
+    <g>
+      <!-- Core Halo Ambient Pulse -->
+      <circle cx="250" cy="250" r="45" fill="url(#coreGlowV2)" class="animate-pulse-subtle" style="transform-origin: 250px 250px;" />
+      
+      <!-- Outer Core Ring in Warm Brown & Sage Green -->
+      <circle cx="250" cy="250" r="32" fill="#403027" stroke="#9CAF88" stroke-width="2" />
+      
+      <!-- Inner Core Geometry -->
+      <circle cx="250" cy="250" r="18" fill="#1D1511" stroke="#E9DFCF" stroke-opacity="0.3" stroke-width="1" />
+      <polygon points="250,238 260,256 240,256" fill="#9CAF88" />
+    </g>
+
+    <!-- Core Label -->
+    <text x="250" y="295" font-family="'JetBrains Mono', monospace" font-size="10" fill="#E9DFCF" text-anchor="middle" font-weight="700" letter-spacing="1.5">
+      {hero?.orbital_core_label || 'FASTIFY GATEWAY'}
+    </text>
+
+    <!-- Radar telemetry tags around edge in Muted Oat -->
+    <text x="30" y="40" font-family="'JetBrains Mono', monospace" font-size="8" fill="#C9BFAF" opacity="0.6">{hero?.orbital_radar_top_left || 'SYS.ORBIT // 26.14°N'}</text>
+    <text x="470" y="40" font-family="'JetBrains Mono', monospace" font-size="8" fill="#C9BFAF" opacity="0.6" text-anchor="end">{hero?.orbital_radar_top_right || 'REDIS.V6.CLUSTER'}</text>
+    <text x="30" y="465" font-family="'JetBrains Mono', monospace" font-size="8" fill="#C9BFAF" opacity="0.6">{hero?.orbital_radar_bottom_left || 'FAILOVER // 3.3-70B ➔ 1.5-FLASH'}</text>
+    <text x="470" y="465" font-family="'JetBrains Mono', monospace" font-size="8" fill="#C9BFAF" opacity="0.6" text-anchor="end">{hero?.orbital_radar_bottom_right || 'LATENCY // <5ms HIT'}</text>
+  </svg>
+  </div>
+
+  <!-- Interactive status pill below visual with warm rounded aesthetic -->
+  <div class="mt-4 sm:mt-5 bg-[#2B1D16]/90 border border-[#E9DFCF]/15 px-4 py-1.5 rounded-full backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.35)] flex items-center space-x-3 z-20">
+    <div class="flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-ping"></span>
+      <span class="technical-mono text-[11px] font-semibold text-[#E9DFCF]">{hero?.orbital_status_title || 'TOPOLOGY: DISTRIBUTED'}</span>
+    </div>
+    <span class="text-[#E9DFCF]/20">|</span>
+    <span class="technical-mono text-[11px] text-[#C9BFAF]">{hero?.orbital_status_reliability || 'RELIABILITY: 99.9%'}</span>
+  </div>
+
+</div>

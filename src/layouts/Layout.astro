@@ -1,0 +1,113 @@
+---
+import '../styles/global.css';
+import { getSeoSettings } from '../lib/content';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: string;
+}
+
+const props = Astro.props;
+
+let seoDefaults: any = {};
+try {
+  seoDefaults = await getSeoSettings();
+} catch (e) {
+  // Fallback
+}
+
+const title = props.title || seoDefaults.site_title || 'Mrinmoy Borah | Backend Software Engineer';
+const description = props.description || seoDefaults.site_description || 'Personal portfolio of Mrinmoy Borah — Backend Software Engineer specializing in distributed systems, asynchronous queue architectures (BullMQ/Redis), fault-tolerant gateways, and database modeling.';
+const image = props.image || seoDefaults.og_image || '/og-image.png';
+const type = props.type || 'website';
+const twitterCard = seoDefaults.twitter_card || 'summary_large_image';
+const robotsDirectives = seoDefaults.robots_directives || 'index, follow';
+
+const canonicalURL = new URL(Astro.url.pathname, seoDefaults.canonical_url || Astro.site || 'https://mrinmoybrh.github.io');
+
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Mrinmoy Borah',
+  jobTitle: 'Backend Software Engineer',
+  alumniOf: {
+    '@type': 'EducationalOrganization',
+    name: 'Dhemaji Engineering College',
+  },
+  url: 'https://mrinmoybrh.github.io',
+  sameAs: [
+    'https://github.com/MrinmoyBrh',
+    'https://www.linkedin.com/in/mrinmoy-borah-7771843b9/',
+  ],
+  knowsAbout: [
+    'Distributed Systems',
+    'Node.js',
+    'TypeScript',
+    'Redis',
+    'BullMQ',
+    'Fastify',
+    'PostgreSQL',
+    'Circuit Breaker Pattern',
+    'Python',
+    'Laravel',
+    'Computer Vision',
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="robots" content={robotsDirectives} />
+    <meta name="author" content="Mrinmoy Borah" />
+    <meta name="theme-color" content="#1D1511" />
+
+    <!-- Primary Web Fonts & Custom Font Preloads for Instant Render & Zero Layout Shift -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/NeoradicalBrushLettering-3lpBL.otf" as="font" type="font/otf" crossorigin />
+    <link rel="preload" href="/fonts/RoyaleAmoureScript.ttf" as="font" type="font/ttf" crossorigin />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, canonicalURL)} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content={twitterCard} />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={new URL(image, canonicalURL)} />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+  </head>
+  <body class="bg-[#1D1511] text-[#E9DFCF] antialiased relative selection:bg-sage selection:text-espresso-deep">
+    <!-- Accessible Skip to Content -->
+    <a href="#main-content" class="skip-to-content">
+      Skip to main content [Enter]
+    </a>
+
+    <!-- Subtle noise & technical grid layers -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+    <div class="fixed inset-0 tech-grid-bg opacity-25 pointer-events-none radial-mask" aria-hidden="true"></div>
+
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,642 @@
+---
+import { projects, type ProjectCaseStudy } from '../data/projects';
+import { getProjects } from '../lib/content';
+import CircuitSimulator from './CircuitSimulator.astro';
+
+interface Props {
+  previewDraft?: boolean;
+}
+
+const { previewDraft = false } = Astro.props;
+
+let allProjects: ProjectCaseStudy[] = projects;
+try {
+  const dbProjects = (await getProjects('all', !previewDraft)) as any;
+  if (dbProjects && dbProjects.length > 0) {
+    allProjects = dbProjects;
+  }
+} catch (e) {
+  // Database fallback
+}
+
+const p1: ProjectCaseStudy = allProjects.find((p) => p.id === 'ai-resilient-gateway') || allProjects[0] || projects[0];
+const p2: ProjectCaseStudy = allProjects.find((p) => p.id === 'apgcl-app') || allProjects[1] || projects[1];
+const p3: ProjectCaseStudy = allProjects.find((p) => p.id === 'microbounty') || allProjects[2] || projects[2];
+
+let additional: ProjectCaseStudy[] = allProjects.filter((p: any) => p.placement === 'additional' || (!p.featured && p.id !== p1.id && p.id !== p2.id && p.id !== p3.id));
+if (additional.length === 0) {
+  additional = projects.filter((p) => !p.featured);
+}
+---
+
+<section id="systems" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Editorial Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 sm:mb-20 pb-8 border-b border-[#E9DFCF]/10 gap-6">
+      <div>
+        <div class="flex items-center space-x-3 technical-mono text-xs text-[#9CAF88] mb-4">
+          <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-pulse"></span>
+          <span class="tracking-widest uppercase">ENGINEERING PORTFOLIO // VERIFIED WORK</span>
+        </div>
+        <h2 class="font-brush text-4xl sm:text-5xl lg:text-6xl text-[#E9DFCF] tracking-wide">
+          Featured <span class="font-script text-[#C9BFAF] font-normal text-[1.08em]">Systems.</span>
+        </h2>
+      </div>
+      
+      <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] lg:text-[18px] text-[#C9BFAF] max-w-md leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] font-normal">
+        Three distinct architectural undertakings—distributed queue gateways, public utility infrastructure, and containerized code runners.
+      </p>
+    </div>
+
+    <!-- ====================================================================
+         PROJECT 01: Adaptive AI Gateway & Resilient Workflow Engine
+         Cinematic Rounded Espresso Card: Narrative Left, Topology Visual Right
+         ==================================================================== -->
+    <article class="mb-24 sm:mb-32 relative group">
+      
+      <!-- Ambient Backlight in Sage Green & Warm Brown -->
+      <div class="absolute -top-12 -left-12 w-[550px] h-[550px] bg-[#9CAF88]/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+
+      <div class="p-6 sm:p-10 lg:p-12 rounded-3xl bg-[#2B1D16]/70 border border-[#E9DFCF]/12 backdrop-blur-md shadow-[0_16px_45px_-10px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-[#9CAF88]/40 hover:shadow-[0_20px_50px_-8px_rgba(0,0,0,0.6)]">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          <!-- Left: Project Narrative & Technical Data (5 cols) -->
+          <div class="lg:col-span-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-3 mb-4 technical-mono text-xs">
+                <span class="text-[#9CAF88] font-bold">PROJECT // 01</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF] uppercase">Distributed Systems</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF]/60">2024</span>
+              </div>
+
+              <h3 class="font-brush text-3xl sm:text-4xl text-[#E9DFCF] mb-6 leading-snug">
+                <a href={`/projects/${p1.slug}`} class="hover:text-[#9CAF88] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]">
+                  {p1.title}
+                </a>
+              </h3>
+
+              <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] mb-8 font-normal">
+                A high-throughput API gateway built with Fastify and TypeScript. It buffers inference traffic through BullMQ queues so sudden surges don't stall upstream models, caches repetitive prompts in Redis with sub-5ms SHA-256 lookups, and automatically trips a circuit breaker to switch between Groq and Gemini when upstream errors spike.
+              </p>
+
+              <!-- Key Mechanics Checklist -->
+              <div class="space-y-3 mb-8 pb-8 border-b border-[#E9DFCF]/10 technical-mono text-xs">
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Sub-5ms Cache:</strong> SHA-256 prompt hashing in Redis (3600s TTL).</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Stateful Circuit Breaker:</strong> 3-failure threshold tripping to OPEN for fast failover.</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Asynchronous BullMQ:</strong> Concurrency of 5 with exponential backoff retries.</span>
+                </div>
+              </div>
+
+              <!-- Tech Tags (Rounded Pills) -->
+              <div class="flex flex-wrap gap-2 mb-8 technical-mono text-xs">
+                {p1.badges.map((badge: string) => (
+                  <span class="px-3 py-1 bg-[#403027]/70 text-[#C9BFAF] border border-[#E9DFCF]/10 rounded-full">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="flex items-center space-x-6 technical-mono text-xs">
+              <a
+                href={`/projects/${p1.slug}`}
+                class="inline-flex items-center space-x-2 text-[#E9DFCF] font-bold hover:text-[#9CAF88] transition-colors"
+              >
+                <span>Explore Case Study</span>
+                <span class="text-[#9CAF88]">→</span>
+              </a>
+
+              {p1.githubUrl && (
+                <a
+                  href={p1.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-[#C9BFAF] hover:text-[#E9DFCF] transition-colors"
+                >
+                  GitHub Repository ↗
+                </a>
+              )}
+            </div>
+          </div>
+
+          <!-- Right: Topology Visual Composition (7 cols) -->
+          <div class="lg:col-span-7 relative">
+            <div class="relative w-full aspect-[16/11] bg-[#1D1511]/90 border border-[#E9DFCF]/12 rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col justify-between shadow-xl">
+              
+              <!-- Technical Canvas Grid Backdrop -->
+              <div class="absolute inset-0 tech-grid-bg opacity-30 pointer-events-none"></div>
+              <div class="absolute top-0 right-0 w-32 h-32 bg-[#9CAF88]/15 blur-3xl pointer-events-none"></div>
+
+              <!-- Header Overlay Telemetry -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[11px] text-[#C9BFAF] pb-4 border-b border-[#E9DFCF]/10">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-ping"></span>
+                  <span class="text-[#E9DFCF] font-semibold">GATEWAY TOPOLOGY SIMULATION</span>
+                </div>
+                <span class="text-[#C9BFAF]/60">ORCHESTRATOR // V2.0</span>
+              </div>
+
+              <!-- SVG Isometric / Node Network Graphic -->
+              <div class="relative z-10 my-auto py-4 flex items-center justify-center">
+                <svg class="w-full max-w-[520px] h-auto overflow-visible" viewBox="0 0 520 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Connecting Bus Lines -->
+                  <path d="M 60 130 L 160 130" stroke="#E9DFCF" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <path d="M 160 130 L 260 70" stroke="#9CAF88" stroke-width="2" stroke-opacity="0.85"/>
+                  <path d="M 160 130 L 260 190" stroke="#E9DFCF" stroke-opacity="0.25" stroke-width="1.5"/>
+                  <path d="M 260 70 L 390 70" stroke="#9CAF88" stroke-width="2" stroke-dasharray="4 4"/>
+                  <path d="M 260 190 L 390 190" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5" stroke-dasharray="4 4"/>
+                  <path d="M 390 70 L 470 130" stroke="#9CAF88" stroke-width="1.5"/>
+                  <path d="M 390 190 L 470 130" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5"/>
+
+                  <!-- Node 1: Ingress Gateway -->
+                  <g transform="translate(60, 130)">
+                    <rect x="-35" y="-35" width="70" height="70" rx="10" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5"/>
+                    <rect x="-25" y="-25" width="50" height="50" rx="8" fill="#1D1511" stroke="#9CAF88" stroke-width="1"/>
+                    <text y="-5" font-family="'JetBrains Mono', monospace" font-size="9" fill="#E9DFCF" text-anchor="middle" font-weight="bold">INGRESS</text>
+                    <text y="10" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#C9BFAF" text-anchor="middle">FASTIFY</text>
+                  </g>
+
+                  <!-- Node 2: Deterministic SHA-256 Cache -->
+                  <g transform="translate(260, 70)">
+                    <polygon points="0,-36 32,-18 32,18 0,36 -32,18 -32,-18" fill="#2B1D16" stroke="#9CAF88" stroke-width="2"/>
+                    <text y="-4" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#E9DFCF" text-anchor="middle" font-weight="bold">REDIS CACHE</text>
+                    <text y="11" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#9CAF88" text-anchor="middle">&lt;5ms HIT</text>
+                  </g>
+
+                  <!-- Node 3: BullMQ Queue Buffer -->
+                  <g transform="translate(260, 190)">
+                    <rect x="-38" y="-28" width="76" height="56" rx="8" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5"/>
+                    <text y="-4" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#E9DFCF" text-anchor="middle" font-weight="bold">BULLMQ</text>
+                    <text y="11" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#C9BFAF" text-anchor="middle">CONCURRENCY: 5</text>
+                  </g>
+
+                  <!-- Node 4: Circuit Breaker State Machine -->
+                  <g transform="translate(390, 70)">
+                    <rect x="-32" y="-28" width="64" height="56" rx="8" fill="#2B1D16" stroke="#9CAF88" stroke-width="1.5"/>
+                    <text y="-4" font-family="'JetBrains Mono', monospace" font-size="8" fill="#E9DFCF" text-anchor="middle" font-weight="bold">CIRCUIT</text>
+                    <text y="10" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#9CAF88" text-anchor="middle">CLOSED / OK</text>
+                  </g>
+
+                  <!-- Node 5: Failover Upstream Tier -->
+                  <g transform="translate(470, 130)">
+                    <circle r="26" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.25" stroke-width="1.5"/>
+                    <circle r="10" fill="#9CAF88" opacity="0.8"/>
+                    <text y="-32" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#C9BFAF" text-anchor="middle">UPSTREAM</text>
+                    <text y="38" font-family="'JetBrains Mono', monospace" font-size="7" fill="#C9BFAF" opacity="0.7" text-anchor="middle">GROQ / GEMINI</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Footer Readout Strip -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[10px] text-[#C9BFAF]/70 pt-3 border-t border-[#E9DFCF]/10">
+                <span>METRIC // CACHE_RESOLUTION_TIME: 3MS</span>
+                <span class="text-[#9CAF88] font-semibold">RETRY_POLICY: EXPONENTIAL</span>
+                <span>STORAGE: POSTGRESQL_TELEMETRY</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </article>
+
+    <!-- ====================================================================
+         PROJECT 02: APGCL Web Application
+         Cinematic Industrial Utility Layout: Warm Translucent Cards & Power Grid Telemetry
+         ==================================================================== -->
+    <article class="mb-24 sm:mb-32 relative group">
+      
+      <!-- Subtle ambient glow -->
+      <div class="absolute -bottom-10 right-0 w-[500px] h-[500px] bg-[#9CAF88]/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+
+      <div class="p-6 sm:p-10 lg:p-12 rounded-3xl bg-[#2B1D16]/70 border border-[#E9DFCF]/12 backdrop-blur-md shadow-[0_16px_45px_-10px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-[#9CAF88]/40 hover:shadow-[0_20px_50px_-8px_rgba(0,0,0,0.6)]">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          <!-- Left: Industrial Grid Visual Dashboard (7 cols) -->
+          <div class="lg:col-span-7 order-2 lg:order-1 relative">
+            <div class="relative w-full aspect-[16/11] bg-[#1D1511]/90 border border-[#E9DFCF]/12 rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col justify-between shadow-xl">
+              
+              <div class="absolute inset-0 tech-grid-bg opacity-20 pointer-events-none"></div>
+
+              <!-- Industrial Header Bar -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[11px] text-[#C9BFAF] pb-4 border-b border-[#E9DFCF]/10">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-[#9CAF88] inline-block"></span>
+                  <span class="text-[#E9DFCF] font-semibold">ASSAM POWER GENERATION CORP // SECURE PORTAL</span>
+                </div>
+                <span class="border border-[#E9DFCF]/15 px-2.5 py-0.5 bg-[#2B1D16] rounded-full text-[#C9BFAF] text-[10px]">STATE UTILITY</span>
+              </div>
+
+              <!-- Layered Translucent Information Panels -->
+              <div class="relative z-10 my-auto py-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- Panel A: User Authentication & Access -->
+                <div class="p-4 bg-[#2B1D16]/80 border border-[#E9DFCF]/10 rounded-xl backdrop-blur-md">
+                  <div class="flex items-center justify-between text-[10px] technical-mono text-[#C9BFAF] mb-2">
+                    <span>SECURITY LAYER</span>
+                    <span class="text-[#9CAF88] font-bold">SESSION / AUTH</span>
+                  </div>
+                  <h4 class="font-display font-bold text-sm text-[#E9DFCF] mb-1">User Authentication</h4>
+                  <p class="text-[11px] text-[#C9BFAF] leading-snug">
+                    Secure user login workflows, session handling, and credential protection for administrative users.
+                  </p>
+                  <div class="mt-3 pt-2 border-t border-[#E9DFCF]/10 flex items-center justify-between text-[10px] technical-mono text-[#C9BFAF]/70">
+                    <span>ACCESS CONTROL</span>
+                    <span class="text-[#9CAF88]">MANAGED</span>
+                  </div>
+                </div>
+
+                <!-- Panel B: Statutory Document Archiving -->
+                <div class="p-4 bg-[#2B1D16]/80 border border-[#E9DFCF]/10 rounded-xl backdrop-blur-md">
+                  <div class="flex items-center justify-between text-[10px] technical-mono text-[#C9BFAF] mb-2">
+                    <span>STATUTORY REPOSITORY</span>
+                    <span class="text-[#E9DFCF]">MYSQL 8.0</span>
+                  </div>
+                  <h4 class="font-display font-bold text-sm text-[#E9DFCF] mb-1">Tariff & RTI Architecture</h4>
+                  <p class="text-[11px] text-[#C9BFAF] leading-snug">
+                    Scoped prefix routing organizing state electricity tariffs, RTI disclosures, and official legislative statements.
+                  </p>
+                  <div class="mt-3 pt-2 border-t border-[#E9DFCF]/10 flex items-center justify-between text-[10px] technical-mono text-[#C9BFAF]/70">
+                    <span>ROUTING SCOPE</span>
+                    <span class="text-[#E9DFCF]">/documents/*</span>
+                  </div>
+                </div>
+
+                <!-- Panel C: Notification Engine (Full Width) -->
+                <div class="sm:col-span-2 p-3.5 bg-[#2B1D16]/60 border border-[#E9DFCF]/10 rounded-xl technical-mono text-[11px] flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+                    <span class="text-[#E9DFCF]">TRANSACTIONAL PIPELINE:</span>
+                    <span class="text-[#C9BFAF]">Automated email verification & admin alert dispatch</span>
+                  </div>
+                  <span class="text-[#9CAF88]">STATUS: ACTIVE</span>
+                </div>
+
+              </div>
+
+              <!-- Footer Readout -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[10px] text-[#C9BFAF]/70 pt-3 border-t border-[#E9DFCF]/10">
+                <span>FRAMEWORK: LARAVEL 13 / PHP 8.4</span>
+                <span>UI: LIVEWIRE 4 + FLUX</span>
+                <span>LOCATION: GUWAHATI, ASSAM</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right: Project Narrative & Contribution (5 cols) -->
+          <div class="lg:col-span-5 order-1 lg:order-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-3 mb-4 technical-mono text-xs">
+                <span class="text-[#9CAF88] font-bold">PROJECT // 02</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF] uppercase">Enterprise Backend</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF]/60">2026</span>
+              </div>
+
+              <h3 class="font-brush text-3xl sm:text-4xl text-[#E9DFCF] mb-6 leading-snug">
+                <a href={`/projects/${p2.slug}`} class="hover:text-[#9CAF88] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]">
+                  {p2.title}
+                </a>
+              </h3>
+
+              <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] mb-8 font-normal">
+                Engineered during my software engineering internship at Assam Power Generation Corporation Limited (2026). The application serves as an operations portal equipped with secure authentication, an administrative dashboard, transactional email notifications, and an organized document repository for statutory state electricity filings.
+              </p>
+
+              <!-- Key Highlights -->
+              <div class="space-y-3 mb-8 pb-8 border-b border-[#E9DFCF]/10 technical-mono text-xs">
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Authentication:</strong> Secure login workflows and session management.</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Notification Flow:</strong> Automated account verification and administrative dispatch.</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Statutory Archiving:</strong> Structured hierarchy for tariffs, RTI, and official directives.</span>
+                </div>
+              </div>
+
+              <!-- Tech Tags -->
+              <div class="flex flex-wrap gap-2 mb-8 technical-mono text-xs">
+                {p2.badges.map((badge: string) => (
+                  <span class="px-3 py-1 bg-[#403027]/70 text-[#C9BFAF] border border-[#E9DFCF]/10 rounded-full">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="flex items-center space-x-6 technical-mono text-xs">
+              <a
+                href={`/projects/${p2.slug}`}
+                class="inline-flex items-center space-x-2 text-[#E9DFCF] font-bold hover:text-[#9CAF88] transition-colors"
+              >
+                <span>Explore Case Study</span>
+                <span class="text-[#9CAF88]">→</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </article>
+
+    <!-- ====================================================================
+         PROJECT 03: MicroBounty — Sandboxed Code Evaluation Engine
+         Rounded Espresso Container & Execution Overlays
+         ==================================================================== -->
+    <article class="mb-24 sm:mb-32 relative group">
+      
+      <!-- Backlight -->
+      <div class="absolute -top-10 -left-10 w-[500px] h-[500px] bg-[#9CAF88]/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+
+      <div class="p-6 sm:p-10 lg:p-12 rounded-3xl bg-[#2B1D16]/70 border border-[#E9DFCF]/12 backdrop-blur-md shadow-[0_16px_45px_-10px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-[#9CAF88]/40 hover:shadow-[0_20px_50px_-8px_rgba(0,0,0,0.6)]">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          <!-- Left: Project Narrative & Technical Context (5 cols) -->
+          <div class="lg:col-span-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-3 mb-4 technical-mono text-xs">
+                <span class="text-[#9CAF88] font-bold">PROJECT // 03</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF] uppercase">Backend & Automation</span>
+                <span class="text-[#E9DFCF]/20">/</span>
+                <span class="text-[#C9BFAF]/60">2024</span>
+              </div>
+
+              <h3 class="font-brush text-3xl sm:text-4xl text-[#E9DFCF] mb-6 leading-snug">
+                <a href={`/projects/${p3.slug}`} class="hover:text-[#9CAF88] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]">
+                  {p3.title}
+                </a>
+              </h3>
+
+              <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] mb-8 font-normal">
+                An automated code evaluation runner that tests code submissions and pull requests inside isolated Docker containers. It sets strict resource limits (128MB RAM, 0.5 CPU cores) to prevent memory exhaustion, buffers incoming tasks through BullMQ and Redis queues, and processes webhook triggers to return structured execution logs and exit codes.
+              </p>
+
+              <!-- Highlights -->
+              <div class="space-y-3 mb-8 pb-8 border-b border-[#E9DFCF]/10 technical-mono text-xs">
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Docker Execution:</strong> Spawns ephemeral containers with resource caps (128MB RAM, 0.5 CPU).</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Queue Buffering:</strong> Decouples evaluation tasks through BullMQ to absorb traffic spikes.</span>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <span class="text-[#9CAF88] font-bold">›</span>
+                  <span class="text-[#C9BFAF]"><strong class="text-[#E9DFCF] font-medium">Webhook Ingestion:</strong> Handles automated test triggers from GitHub pull requests.</span>
+                </div>
+              </div>
+
+              <!-- Tech Tags -->
+              <div class="flex flex-wrap gap-2 mb-8 technical-mono text-xs">
+                {p3.badges.map((badge: string) => (
+                  <span class="px-3 py-1 bg-[#403027]/70 text-[#C9BFAF] border border-[#E9DFCF]/10 rounded-full">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="flex items-center space-x-6 technical-mono text-xs">
+              <a
+                href={`/projects/${p3.slug}`}
+                class="inline-flex items-center space-x-2 text-[#E9DFCF] font-bold hover:text-[#9CAF88] transition-colors"
+              >
+                <span>Explore Case Study</span>
+                <span class="text-[#9CAF88]">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Docker Sandbox Telemetry & Topology Visual (7 cols) -->
+          <div class="lg:col-span-7 relative">
+            <div class="relative w-full aspect-[16/11] bg-[#1D1511]/90 border border-[#E9DFCF]/12 rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col justify-between shadow-xl">
+              
+              <div class="absolute inset-0 tech-grid-bg opacity-25 pointer-events-none"></div>
+
+              <!-- Header -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[11px] text-[#C9BFAF] pb-4 border-b border-[#E9DFCF]/10">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-[#9CAF88]"></span>
+                  <span class="text-[#E9DFCF] font-semibold">DOCKER RUNNER ENGINE // ISOLATED SANDBOX</span>
+                </div>
+                <span class="text-[#9CAF88] font-mono">[CONTAINER_ISOLATION]</span>
+              </div>
+
+              <!-- Stylized Docker Sandbox Topology SVG -->
+              <div class="relative z-10 my-auto py-4 flex items-center justify-center">
+                <svg class="w-full max-w-[480px] h-auto overflow-visible" viewBox="0 0 480 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Connecting Bus Lines -->
+                  <path d="M 65 120 L 155 120" stroke="#E9DFCF" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <path d="M 155 120 L 225 120" stroke="#9CAF88" stroke-width="2"/>
+                  <path d="M 375 120 L 435 120" stroke="#9CAF88" stroke-width="2" stroke-dasharray="3 3"/>
+
+                  <!-- Node 1: Ingress Webhook Trigger -->
+                  <g transform="translate(65, 120)">
+                    <rect x="-35" y="-30" width="70" height="60" rx="8" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5"/>
+                    <text y="-6" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#E9DFCF" text-anchor="middle" font-weight="bold">TRIGGER</text>
+                    <text y="10" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#C9BFAF" text-anchor="middle">WEBHOOK</text>
+                  </g>
+
+                  <!-- Node 2: BullMQ Buffer Queue -->
+                  <g transform="translate(155, 120)">
+                    <circle r="26" fill="#2B1D16" stroke="#9CAF88" stroke-width="1.5"/>
+                    <text y="-4" font-family="'JetBrains Mono', monospace" font-size="8" fill="#E9DFCF" text-anchor="middle" font-weight="bold">BULLMQ</text>
+                    <text y="9" font-family="'JetBrains Mono', monospace" font-size="7" fill="#9CAF88" text-anchor="middle">BUFFER</text>
+                  </g>
+
+                  <!-- Node 3: Isolated Docker Container Outer Boundary -->
+                  <g transform="translate(300, 120)">
+                    <rect x="-75" y="-70" width="150" height="140" rx="12" fill="#1D1511" stroke="#9CAF88" stroke-width="1.5" stroke-dasharray="4 4"/>
+                    
+                    <!-- Container Title Bar -->
+                    <rect x="-75" y="-70" width="150" height="24" rx="12" fill="#403027"/>
+                    <circle cx="-60" cy="-58" r="3.5" fill="#9CAF88"/>
+                    <text x="-48" y="-55" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#E9DFCF" font-weight="bold">DOCKER CONTAINER</text>
+
+                    <!-- Internal Runner Box -->
+                    <rect x="-60" y="-34" width="120" height="42" rx="6" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.15" stroke-width="1"/>
+                    <text y="-18" font-family="'JetBrains Mono', monospace" font-size="8" fill="#E9DFCF" text-anchor="middle" font-weight="bold">CODE RUNNER</text>
+                    <text y="-5" font-family="'JetBrains Mono', monospace" font-size="7" fill="#C9BFAF" text-anchor="middle">SANDBOX PROCESS</text>
+
+                    <!-- Resource Limits Readout -->
+                    <rect x="-60" y="18" width="120" height="24" rx="6" fill="#1D1511" stroke="#E9DFCF" stroke-opacity="0.1" stroke-width="1"/>
+                    <text y="30" font-family="'JetBrains Mono', monospace" font-size="7" fill="#9CAF88" text-anchor="middle">RAM: 128MB | CPU: 0.5</text>
+                    <text y="38" font-family="'JetBrains Mono', monospace" font-size="6.5" fill="#C9BFAF" opacity="0.6" text-anchor="middle">TIMEOUT: 5000MS</text>
+                  </g>
+
+                  <!-- Node 4: Execution Output Stream -->
+                  <g transform="translate(435, 120)">
+                    <rect x="-24" y="-28" width="48" height="56" rx="8" fill="#2B1D16" stroke="#E9DFCF" stroke-opacity="0.2" stroke-width="1.5"/>
+                    <text y="-6" font-family="'JetBrains Mono', monospace" font-size="8" fill="#E9DFCF" text-anchor="middle" font-weight="bold">EXIT</text>
+                    <text y="8" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#9CAF88" text-anchor="middle">CODE 0</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Footer Readout -->
+              <div class="flex items-center justify-between z-10 technical-mono text-[10px] text-[#C9BFAF]/70 pt-3 border-t border-[#E9DFCF]/10">
+                <span>RUNTIME: NODE.JS / EXPRESS</span>
+                <span>LIMIT: 128MB RAM // 0.5 CPU</span>
+                <span class="text-[#9CAF88]">STATUS: CONTAINER_ISOLATED</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MicroBounty Simulation Harness Console -->
+      <CircuitSimulator />
+
+    </article>
+
+    <!-- ====================================================================
+         ADDITIONAL SYSTEMS ARCHIVE
+         Clean 3-Column Editorial Grid: Crop Disease Detection, SecureVault, etc.
+         ==================================================================== -->
+    <div class="pt-16 border-t border-[#E9DFCF]/10">
+      
+      <div class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-12 gap-3">
+        <h3 class="technical-mono text-xs uppercase tracking-widest text-[#E9DFCF] font-bold">
+          ADDITIONAL SYSTEMS // APPLIED RESEARCH & STORAGE
+        </h3>
+        <span class="text-[#C9BFAF]/60 text-xs technical-mono">[ENGINEERING ARCHIVES]</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+        {additional.map((item, idx) => {
+          const isPrimary = idx === 0;
+          return (
+            <div
+              class="p-6 sm:p-8 rounded-2xl relative flex flex-col justify-between transition-all duration-300 bg-[#2B1D16]/60 border border-[#E9DFCF]/10 hover:border-[#9CAF88]/50 hover:shadow-[0_12px_35px_rgba(0,0,0,0.35)] hover:-translate-y-1 backdrop-blur-sm"
+            >
+              <div>
+                <!-- Card Header Dossier -->
+                <div class="flex items-center justify-between technical-mono text-xs text-[#C9BFAF] mb-4 pb-3 border-b border-[#E9DFCF]/10">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#9CAF88]"></span>
+                    <span class="text-[#E9DFCF] font-bold">
+                      PROJECT // 0{idx + 1}
+                    </span>
+                  </div>
+                  {isPrimary ? (
+                    <span class="px-2.5 py-0.5 bg-[#9CAF88]/15 text-[#9CAF88] border border-[#9CAF88]/30 rounded-full text-[10px] font-bold">
+                      PRIMARY REPO
+                    </span>
+                  ) : idx === 1 ? (
+                    <span class="px-2.5 py-0.5 bg-[#E9DFCF]/5 text-[#C9BFAF] border border-[#E9DFCF]/15 rounded-full text-[10px]">
+                      NIT SILCHAR RESEARCH
+                    </span>
+                  ) : (
+                    <span class="px-2.5 py-0.5 bg-[#E9DFCF]/5 text-[#C9BFAF] border border-[#E9DFCF]/15 rounded-full text-[10px]">
+                      COMPLETED REPO
+                    </span>
+                  )}
+                </div>
+
+                <!-- Project Title -->
+                <h4 class="font-brush text-2xl text-[#E9DFCF] mb-3 leading-snug">
+                  <a
+                    href={`/projects/${item.slug}`}
+                    class="hover:text-[#9CAF88] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]"
+                  >
+                    {item.title}
+                  </a>
+                </h4>
+
+                <!-- Short Natural Description -->
+                <p class="paragraph-manrope font-manrope text-[14px] sm:text-[15px] text-[#C9BFAF] leading-[1.65] tracking-[-0.01em] mb-6 font-normal">
+                  {item.summary}
+                </p>
+
+                <!-- Key Implemented Features -->
+                {item.keyFeatures && item.keyFeatures.length > 0 && (
+                  <div class="space-y-2 mb-6 pb-6 border-b border-[#E9DFCF]/10 technical-mono">
+                    <span class="text-[10px] uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-1">
+                      Key Implemented Features
+                    </span>
+                    {item.keyFeatures.map((feat: any) => (
+                      <div class="flex items-start space-x-2 text-[#C9BFAF] text-[11px] leading-relaxed">
+                        <span class="text-[#9CAF88] font-bold">›</span>
+                        <span>
+                          <strong class="text-[#E9DFCF] font-medium">{feat.label}:</strong> {feat.detail}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <!-- Real Technologies Used -->
+                <div class="mb-6">
+                  <span class="text-[10px] uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-2 technical-mono">
+                    Technologies
+                  </span>
+                  <div class="flex flex-wrap gap-1.5 technical-mono text-[11px] text-[#C9BFAF]">
+                    {item.badges.map((b: string) => (
+                      <span class="px-2.5 py-0.5 bg-[#403027]/70 text-[#C9BFAF] border border-[#E9DFCF]/10 rounded-full">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Links Footer -->
+              <div class="pt-4 border-t border-[#E9DFCF]/10 flex items-center justify-between text-xs technical-mono gap-3">
+                {item.githubUrl ? (
+                  <a
+                    href={item.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center space-x-1.5 text-[#9CAF88] hover:text-[#B1C2A0] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]"
+                    aria-label={`View ${item.title} repository on GitHub (opens in new tab)`}
+                  >
+                    <span>GitHub Repo</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ) : (
+                  <span class="text-[#C9BFAF]/60 text-[11px]">Academic Research</span>
+                )}
+                <a
+                  href={`/projects/${item.slug}`}
+                  class="text-[#E9DFCF] hover:text-[#9CAF88] font-semibold transition-colors inline-flex items-center space-x-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9CAF88]"
+                >
+                  <span>Case Study</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+
+    </div>
+
+  </div>
+</section>

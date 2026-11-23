@@ -1,0 +1,354 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   Custom Fonts: Neoradical Brush Lettering & Manrope Modern Sans-Serif Body
+   ========================================================================== */
+@font-face {
+  font-family: 'Neoradical Brush Lettering';
+  src: url('/fonts/NeoradicalBrushLettering-3lpBL.otf') format('opentype'),
+       url('/fonts/NeoradicalBrushLettering.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Woodhaven';
+  src: url('/fonts/RichmondWoodhavenFancyCalligraphyDesignScript-G323D.otf') format('opentype'),
+       url('/fonts/RichmondWoodhaven.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Woodhaven Fancy Calligraphy Design Script';
+  src: url('/fonts/RichmondWoodhavenFancyCalligraphyDesignScript-G323D.otf') format('opentype'),
+       url('/fonts/RichmondWoodhaven.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback aliases */
+@font-face {
+  font-family: 'Shangrella';
+  src: url('/fonts/RichmondWoodhavenFancyCalligraphyDesignScript-G323D.otf') format('opentype'),
+       url('/fonts/RichmondWoodhaven.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Royale Amoure';
+  src: url('/fonts/RichmondWoodhavenFancyCalligraphyDesignScript-G323D.otf') format('opentype'),
+       url('/fonts/RichmondWoodhaven.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Royale Amoure Script';
+  src: url('/fonts/RoyaleAmoureScript.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Portfolio V2 Palette Variables */
+  --color-espresso: #2B1D16;
+  --color-deep-espresso: #1D1511;
+  --color-warm-brown: #403027;
+  --color-oat: #E9DFCF;
+  --color-muted-oat: #C9BFAF;
+  --color-sage: #9CAF88;
+  --color-sage-hover: #B1C2A0;
+
+  /* Aliased System Colors */
+  --color-ink: #1D1511;
+  --color-ink-deep: #150F0C;
+  --color-ink-surface: #2B1D16;
+  --color-pearl: #E9DFCF;
+  --color-coral: #9CAF88;
+  --color-cherry: #9CAF88;
+  --color-smoke: #C9BFAF;
+  --color-smoke-light: #E9DFCF;
+  --color-smoke-dark: #8C8173;
+  --color-orbital: #9CAF88;
+
+  /* Typography Variables */
+  --font-brush: 'Neoradical Brush Lettering', 'Playfair Display', cursive, sans-serif;
+  --font-manrope: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-script: 'Royale Amoure Script', 'Playfair Display', cursive, serif;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #1D1511;
+    color: #E9DFCF;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #1D1511;
+    color: #E9DFCF;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Custom selection in Sage Green & Deep Espresso */
+  ::selection {
+    background-color: #9CAF88;
+    color: #1D1511;
+  }
+
+  /* Accessible focus indicators in Sage Green */
+  :focus-visible {
+    outline: 2px solid #9CAF88;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Accessibility skip link */
+  .skip-to-content {
+    position: absolute;
+    top: -9999px;
+    left: 1rem;
+    z-index: 1000;
+    padding: 0.75rem 1.5rem;
+    background-color: #9CAF88;
+    color: #1D1511;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 9999px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: top 0.2s ease-in-out;
+  }
+
+  .skip-to-content:focus {
+    top: 1rem;
+  }
+}
+
+/* Background system subtle grid with warm tone */
+.tech-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(233, 223, 207, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(233, 223, 207, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.radial-mask {
+  mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 100%);
+}
+
+/* Subtle warm noise overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.02;
+  z-index: 99;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Editorial typography display */
+.editorial-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.technical-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: "zero", "ss01";
+}
+
+/* Custom Body & Heading Typography Utilities */
+.font-brush {
+  font-family: var(--font-brush);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.paragraph-manrope,
+.font-manrope,
+.richmond-description,
+.shangrella-description,
+.royale-description,
+.font-serif-body {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.7;
+}
+
+.font-script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* ==========================================================================
+   Portfolio V2 Premium Editorial Surface Framework
+   Soft rounded corners, translucent warm brown & espresso glassmorphism
+   ========================================================================== */
+
+.panel-espresso {
+  background-color: rgba(43, 29, 22, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(233, 223, 207, 0.1);
+  border-radius: 1.25rem;
+}
+
+.panel-warm-brown {
+  background-color: rgba(64, 48, 39, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(233, 223, 207, 0.12);
+  border-radius: 1.5rem;
+}
+
+.floating-pill-nav {
+  background-color: rgba(43, 29, 22, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(233, 223, 207, 0.14);
+  border-radius: 9999px;
+  box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* Rounded card replacement for legacy HUD cuts */
+.hud-cut-tr,
+.hud-cut-bl,
+.hud-cut-diagonal,
+.hud-cut-stepped,
+.hud-cut-tab {
+  border-radius: 1.25rem !important;
+  clip-path: none !important;
+}
+
+/* Soft corner indicators styled in Sage & Oat */
+.hud-corner-tl::before,
+.hud-corner-tr::after,
+.hud-corner-bl::before,
+.hud-corner-br::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 10;
+  transition: border-color 0.25s ease;
+  border-radius: 2px;
+}
+
+.hud-corner-tl::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #9CAF88;
+  border-left: 2px solid #9CAF88;
+}
+
+.hud-corner-tr::after {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgba(233, 223, 207, 0.25);
+  border-right: 2px solid rgba(233, 223, 207, 0.25);
+}
+
+.hud-corner-bl::before {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgba(233, 223, 207, 0.25);
+  border-left: 2px solid rgba(233, 223, 207, 0.25);
+}
+
+.hud-corner-br::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #9CAF88;
+  border-right: 2px solid #9CAF88;
+}
+
+/* Subtle hairline scanning effect in Sage Green */
+.hud-scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-scan-line::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(156, 175, 136, 0.35) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.hud-scan-line:hover::before {
+  opacity: 1;
+  animation: hudScan 3s linear infinite;
+}
+
+@keyframes hudScan {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(1200%); }
+}
+
+/* Technical dot grid texture inside warm panels */
+.hud-micro-grid {
+  background-image: radial-gradient(rgba(233, 223, 207, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-orbit-slow,
+  .animate-orbit-mid,
+  .animate-orbit-fast,
+  .animate-pulse-subtle,
+  .animate-scanline,
+  .animate-cloud-drift,
+  .hud-scan-line:hover::before {
+    animation: none !important;
+  }
+}

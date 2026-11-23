@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import EditorialProjectShowcase from '../components/EditorialProjectShowcase.astro';
+import Principles from '../components/Principles.astro';
+import SkillsGrid from '../components/SkillsGrid.astro';
+import Timeline from '../components/Timeline.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Footer from '../components/Footer.astro';
+import AtmosphericClouds from '../components/AtmosphericClouds.astro';
+
+export const prerender = false;
+
+const previewDraft = Astro.url.searchParams.get('preview') === 'draft';
+---
+
+<Layout
+  title="Mrinmoy Borah | Backend Software Engineer — Distributed Systems & Resilient Architectures"
+  description="Personal portfolio of Mrinmoy Borah, Backend Software Engineer and B.Tech CSE student at Dhemaji Engineering College (2027). Specializing in BullMQ queues, Redis state machines, deterministic caching, and fault-tolerant gateways."
+>
+  <Header />
+
+  <main id="main-content" class="relative">
+    <!-- Continuous Atmospheric Cloud Layer (Deep Espresso #1D1511, Warm Brown #403027, Oat #E9DFCF, Sage Green #9CAF88) -->
+    <AtmosphericClouds />
+
+    <!-- Hero Section -->
+    <Hero previewDraft={previewDraft} />
+
+    <!-- Systems / Projects Section (Cinematic Editorial Showcase with Code Runner Simulator) -->
+    <EditorialProjectShowcase previewDraft={previewDraft} />
+
+    <!-- Engineering Principles Manifesto -->
+    <Principles />
+
+    <!-- Curated Skills Matrix -->
+    <SkillsGrid />
+
+    <!-- Timeline / Education & Experience -->
+    <Timeline />
+
+    <!-- Contact & Interactive Terminal -->
+    <ContactSection />
+  </main>
+
+  <Footer />
+</Layout>

@@ -1,0 +1,650 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getSessionUser, hashSessionToken } from '../../lib/auth';
+import { getDb } from '../../lib/db';
+import crypto from 'node:crypto';
+
+export const prerender = false;
+
+const user = await getSessionUser(Astro.cookies);
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const db = getDb();
+const adminRecord = (await db.prepare('SELECT id, username, email, name, role, mfa_enabled, last_login_at FROM admin_users WHERE id = ?').get(user.id)) as any;
+const mfaEnabled = Boolean(adminRecord?.mfa_enabled);
+
+// Current session token hash to highlight current device
+const currentToken = Astro.cookies.get('mb_cms_session')?.value || '';
+const currentTokenHash = currentToken ? hashSessionToken(currentToken) : '';
+const legacyCurrentTokenHash = currentToken ? crypto.createHash('sha256').update(currentToken).digest('hex') : '';
+
+// Query active sessions
+const activeSessions = (await db.prepare(`
+  SELECT id, token_hash, created_at, expires_at, last_active_at, user_agent, ip_address
+  FROM sessions
+  WHERE user_id = ? AND expires_at > ?
+  ORDER BY last_active_at DESC
+`).all(user.id, Date.now())) as any[];
+
+function formatRelativeTime(timestamp: number): string {
+  const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}h ago`;
+  return `${Math.floor(diffHour / 24)}d ago`;
+}
+
+function parseUserAgent(ua: string | null): string {
+  if (!ua) return 'Unknown Client';
+  if (ua.includes('Edg/')) return 'Microsoft Edge';
+  if (ua.includes('Chrome/')) return 'Google Chrome';
+  if (ua.includes('Firefox/')) return 'Mozilla Firefox';
+  if (ua.includes('Safari/')) return 'Apple Safari';
+  return ua.slice(0, 32);
+}
+---
+
+<AdminLayout title="Security & Authentication" subtitle="Zero-Trust administrator credentials, RFC 6238 TOTP, and session hardening" activeNav="security">
+  
+  <div class="space-y-6 max-w-4xl">
+    
+    <!-- Toast Alert Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <!-- Header Status Card -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-11 h-11 rounded-xl bg-[#282828] border border-[#343434] flex items-center justify-center text-[#9CAF88]">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-sm font-bold text-[#F5F5F5]">{adminRecord?.name || user.name}</h2>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#9CAF88]/10 border border-[#9CAF88]/30 text-[#9CAF88] font-bold">
+              {adminRecord?.role || 'SUPER_ADMIN'}
+            </span>
+          </div>
+          <p class="text-xs text-[#929292] font-mono mt-0.5">{adminRecord?.email || user.email}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        {mfaEnabled ? (
+          <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/30 text-[#22C55E] text-xs font-mono font-bold">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>2FA ACTIVE (TOTP)</span>
+          </div>
+        ) : (
+          <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] text-xs font-mono font-bold">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>2FA DISABLED</span>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Multi-Factor Authentication (TOTP) Management -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#343434] pb-4">
+        <div>
+          <h3 class="text-sm font-bold text-[#F5F5F5] flex items-center space-x-2">
+            <svg class="w-4 h-4 text-[#9CAF88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>Two-Factor Authentication (RFC 6238 TOTP)</span>
+          </h3>
+          <p class="text-xs text-[#929292] mt-1">
+            Adds a mandatory hardware or software authenticator challenge to verify login attempts. Compatible with Google Authenticator, 1Password, and Authy.
+          </p>
+        </div>
+
+        {mfaEnabled ? (
+          <button
+            id="disable-mfa-btn"
+            class="px-4 py-2 rounded-lg bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/30 text-[#EF4444] text-xs font-bold transition-colors whitespace-nowrap"
+          >
+            Disable 2FA
+          </button>
+        ) : (
+          <button
+            id="start-enrollment-btn"
+            class="px-4 py-2 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] text-xs font-bold transition-colors shadow-sm whitespace-nowrap"
+          >
+            Configure 2FA
+          </button>
+        )}
+      </div>
+
+      <!-- MFA Enabled State Information -->
+      {mfaEnabled && (
+        <div class="p-4 rounded-xl bg-[#282828] border border-[#343434] flex items-start space-x-3 text-xs">
+          <svg class="w-5 h-5 text-[#22C55E] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <div class="space-y-1">
+            <p class="font-bold text-[#F5F5F5]">Your administrator account is protected with Two-Factor Authentication.</p>
+            <p class="text-[#929292]">Every login requires your primary password plus a 6-digit cryptographic TOTP code or single-use recovery code.</p>
+          </div>
+        </div>
+      )}
+
+      <!-- MFA Interactive Enrollment Workflow (Initially Hidden) -->
+      <div id="enrollment-container" class="hidden space-y-6 pt-2">
+        <div class="p-4 rounded-xl bg-[#282828] border border-[#9CAF88]/30 space-y-4">
+          <div class="flex items-center space-x-2 text-[#9CAF88] text-xs font-mono font-bold uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-pulse"></span>
+            <span>Step 1: Link Authenticator App</span>
+          </div>
+          
+          <p class="text-xs text-[#929292] leading-relaxed">
+            Enter the Base32 secret key manually into your authenticator app (Google Authenticator, Authy, Apple Passwords, or 1Password), or click the OTPAuth URI link.
+          </p>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="flex-1 bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs font-mono text-[#9CAF88] select-all truncate" id="enroll-secret-display">
+              GENERATING SECRET...
+            </div>
+            <button
+              id="copy-secret-btn"
+              type="button"
+              class="px-3 py-2 rounded-lg bg-[#202020] hover:bg-[#343434] text-xs text-[#F5F5F5] font-mono border border-[#343434] transition-colors"
+            >
+              Copy Secret
+            </button>
+            <a
+              id="otpauth-link"
+              href="#"
+              class="px-3 py-2 rounded-lg bg-[#202020] hover:bg-[#343434] text-xs text-[#929292] hover:text-[#F5F5F5] font-mono border border-[#343434] transition-colors text-center"
+            >
+              Open in App
+            </a>
+          </div>
+        </div>
+
+        <!-- Emergency Recovery Codes -->
+        <div class="p-4 rounded-xl bg-[#191919] border border-[#343434] space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-[#F5F5F5] text-xs font-bold">
+              <svg class="w-4 h-4 text-[#F59E0B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              <span>Step 2: Emergency Recovery Codes (Single-Use)</span>
+            </div>
+            <button
+              id="copy-codes-btn"
+              type="button"
+              class="text-xs text-[#9CAF88] hover:underline font-mono"
+            >
+              Copy All Codes
+            </button>
+          </div>
+
+          <p class="text-xs text-[#929292]">
+            Save these 8 recovery codes in a secure password manager. If you lose access to your authenticator app, each code can be used exactly once to log in.
+          </p>
+
+          <div id="recovery-codes-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs text-[#F5F5F5] bg-[#111111] p-3 rounded-lg border border-[#343434]">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Confirm with Live Code -->
+        <form id="confirm-mfa-form" class="p-4 rounded-xl bg-[#282828] border border-[#343434] space-y-4">
+          <div class="text-[#F5F5F5] text-xs font-bold">
+            <span>Step 3: Verify Live 6-Digit Code</span>
+          </div>
+          <p class="text-xs text-[#929292]">
+            Enter the 6-digit code currently displayed in your authenticator app to confirm proper configuration.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              id="verification-token"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              placeholder="000000"
+              autocomplete="one-time-code"
+              class="flex-1 max-w-xs bg-[#191919] border border-[#343434] rounded-lg px-4 py-2 text-base font-mono tracking-widest text-[#F5F5F5] text-center focus:outline-none focus:border-[#9CAF88] transition-colors"
+              required
+            />
+            <button
+              type="submit"
+              id="confirm-token-btn"
+              class="px-5 py-2 rounded-lg bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xs transition-colors shadow-sm"
+            >
+              Verify & Enable 2FA
+            </button>
+            <button
+              type="button"
+              id="cancel-enrollment-btn"
+              class="px-4 py-2 rounded-lg bg-[#202020] hover:bg-[#343434] text-xs text-[#929292] font-mono transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Disable MFA Modal / Form (Initially Hidden) -->
+      <div id="disable-mfa-modal" class="hidden p-4 rounded-xl bg-[#282828] border border-[#EF4444]/40 space-y-4">
+        <div class="flex items-center space-x-2 text-[#EF4444] text-xs font-bold">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>Confirm Disabling Two-Factor Authentication</span>
+        </div>
+        <p class="text-xs text-[#929292]">
+          Enter your current administrator password to disable Two-Factor Authentication. This significantly lowers account security.
+        </p>
+
+        <form id="disable-mfa-form" class="flex flex-col sm:flex-row gap-3">
+          <input
+            type="password"
+            id="disable-mfa-password"
+            placeholder="Current administrator password"
+            class="flex-1 bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#EF4444] transition-colors"
+            required
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 rounded-lg bg-[#EF4444] hover:bg-[#DC2626] text-white font-bold text-xs transition-colors"
+          >
+            Confirm Disable
+          </button>
+          <button
+            type="button"
+            id="cancel-disable-btn"
+            class="px-3 py-2 rounded-lg bg-[#202020] hover:bg-[#343434] text-xs text-[#929292] font-mono transition-colors"
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Password Management Card -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-6">
+      <div class="border-b border-[#343434] pb-4">
+        <h3 class="text-sm font-bold text-[#F5F5F5] flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#9CAF88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+          <span>Change Administrator Password</span>
+        </h3>
+        <p class="text-xs text-[#929292] mt-1">
+          Secured with Argon2id cryptographic hashing (RFC 9106, 64MB memory cost). Changing password immediately revokes all other active sessions.
+        </p>
+      </div>
+
+      <form id="password-form" class="space-y-4 max-w-lg">
+        <div>
+          <label class="block text-xs font-mono uppercase text-[#929292] mb-1">Current Password</label>
+          <input
+            type="password"
+            id="current-password"
+            required
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88] transition-colors"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase text-[#929292] mb-1">New Password (Min 12 Characters)</label>
+          <input
+            type="password"
+            id="new-password"
+            minlength="12"
+            required
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88] transition-colors"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase text-[#929292] mb-1">Confirm New Password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            minlength="12"
+            required
+            class="w-full bg-[#191919] border border-[#343434] rounded-lg px-3 py-2 text-xs text-[#F5F5F5] focus:outline-none focus:border-[#9CAF88] transition-colors"
+          />
+        </div>
+
+        <button
+          type="submit"
+          id="update-password-btn"
+          class="px-5 py-2.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs transition-colors shadow-sm"
+        >
+          Update Password & Invalidate Other Sessions
+        </button>
+      </form>
+    </div>
+
+    <!-- Active Sessions Management -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#343434] pb-4">
+        <div>
+          <h3 class="text-sm font-bold text-[#F5F5F5] flex items-center space-x-2">
+            <svg class="w-4 h-4 text-[#9CAF88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>Active Administrative Sessions ({activeSessions.length})</span>
+          </h3>
+          <p class="text-xs text-[#929292] mt-1">
+            2-hour rolling idle timeout. Sessions are bound to cryptographic SHA-256 tokens in HTTP-only cookies.
+          </p>
+        </div>
+
+        {activeSessions.length > 1 && (
+          <button
+            id="revoke-other-sessions-btn"
+            class="px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#343434] border border-[#343434] text-xs font-mono text-[#F5F5F5] transition-colors whitespace-nowrap"
+          >
+            Revoke Other Sessions
+          </button>
+        )}
+      </div>
+
+      <div class="space-y-2">
+        {activeSessions.map((s) => {
+          const isCurrent = s.token_hash === currentTokenHash || s.token_hash === legacyCurrentTokenHash;
+          return (
+            <div class={`p-3 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono ${isCurrent ? 'bg-[#191919] border-[#9CAF88]/30' : 'bg-[#191919]/50 border-[#343434]'}`}>
+              <div class="flex items-center space-x-3">
+                <div class={`w-2 h-2 rounded-full ${isCurrent ? 'bg-[#22C55E]' : 'bg-[#929292]'}`}></div>
+                <div>
+                  <span class="text-[#F5F5F5] font-semibold">{parseUserAgent(s.user_agent)}</span>
+                  <span class="text-[#929292] ml-2">IP: {s.ip_address || '127.0.0.1'}</span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3 text-[#929292]">
+                <span>Active {formatRelativeTime(s.last_active_at || s.created_at)}</span>
+                {isCurrent && (
+                  <span class="px-2 py-0.5 rounded bg-[#22C55E]/10 border border-[#22C55E]/30 text-[#22C55E] text-[10px] font-bold">
+                    THIS DEVICE
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Defensive Security Architecture Telemetry -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6 space-y-4">
+      <div class="border-b border-[#343434] pb-4">
+        <h3 class="text-sm font-bold text-[#F5F5F5] flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span>Production Security Posture</span>
+        </h3>
+        <p class="text-xs text-[#929292] mt-1">
+          Defensive security headers and protections enforced by middleware on all responses.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs font-mono">
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">CONTENT SECURITY POLICY</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">Strict (No eval)</span>
+        </div>
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">ANTI-CLICKJACKING</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">X-Frame-Options: DENY</span>
+        </div>
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">HSTS ENFORCEMENT</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">max-age=63072000</span>
+        </div>
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">CSRF PROTECTION</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">Origin & Host Verification</span>
+        </div>
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">LOGIN RATE LIMIT</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">5 Attempts / 15m Window</span>
+        </div>
+        <div class="p-3 rounded-lg bg-[#191919] border border-[#343434]">
+          <span class="text-[#929292] block text-[10px]">SESSION PERSISTENCE</span>
+          <span class="text-[#22C55E] font-bold mt-1 block">2h Idle Rolling Invalidation</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const toast = document.getElementById('status-toast');
+    let enrollmentData: any = null;
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.className = `p-4 rounded-xl border text-xs font-mono transition-all block ${
+        isError ? 'bg-[#EF4444]/10 border-[#EF4444]/30 text-[#EF4444]' : 'bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E]'
+      }`;
+      setTimeout(() => {
+        toast.className = 'hidden';
+      }, 6000);
+    }
+
+    // 1. Start MFA Enrollment
+    const startEnrollBtn = document.getElementById('start-enrollment-btn');
+    const enrollContainer = document.getElementById('enrollment-container');
+    const secretDisplay = document.getElementById('enroll-secret-display');
+    const otpauthLink = document.getElementById('otpauth-link') as HTMLAnchorElement;
+    const codesGrid = document.getElementById('recovery-codes-grid');
+    const cancelEnrollBtn = document.getElementById('cancel-enrollment-btn');
+
+    startEnrollBtn?.addEventListener('click', async () => {
+      startEnrollBtn.setAttribute('disabled', 'true');
+      startEnrollBtn.textContent = 'Generating...';
+
+      try {
+        const res = await fetch('/api/auth/mfa-enroll', { method: 'POST' });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to start MFA setup', true);
+          startEnrollBtn.removeAttribute('disabled');
+          startEnrollBtn.textContent = 'Configure 2FA';
+          return;
+        }
+
+        enrollmentData = data;
+        if (secretDisplay) secretDisplay.textContent = data.secret;
+        if (otpauthLink) otpauthLink.href = data.uri;
+
+        if (codesGrid && Array.isArray(data.recoveryCodes)) {
+          codesGrid.innerHTML = data.recoveryCodes
+            .map((c: string) => `<div class="p-1.5 bg-[#191919] rounded text-center">${c}</div>`)
+            .join('');
+        }
+
+        enrollContainer?.classList.remove('hidden');
+        startEnrollBtn.classList.add('hidden');
+      } catch (err: any) {
+        showToast(err.message || 'Network error', true);
+        startEnrollBtn.removeAttribute('disabled');
+        startEnrollBtn.textContent = 'Configure 2FA';
+      }
+    });
+
+    cancelEnrollBtn?.addEventListener('click', () => {
+      enrollContainer?.classList.add('hidden');
+      startEnrollBtn?.classList.remove('hidden');
+      startEnrollBtn?.removeAttribute('disabled');
+      if (startEnrollBtn) startEnrollBtn.textContent = 'Configure 2FA';
+    });
+
+    // Copy secret
+    document.getElementById('copy-secret-btn')?.addEventListener('click', () => {
+      if (enrollmentData?.secret) {
+        navigator.clipboard.writeText(enrollmentData.secret);
+        showToast('Secret key copied to clipboard!');
+      }
+    });
+
+    // Copy recovery codes
+    document.getElementById('copy-codes-btn')?.addEventListener('click', () => {
+      if (enrollmentData?.recoveryCodes) {
+        navigator.clipboard.writeText(enrollmentData.recoveryCodes.join('\n'));
+        showToast('All recovery codes copied to clipboard!');
+      }
+    });
+
+    // Confirm MFA form
+    const confirmForm = document.getElementById('confirm-mfa-form') as HTMLFormElement;
+    confirmForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tokenInput = document.getElementById('verification-token') as HTMLInputElement;
+      const btn = document.getElementById('confirm-token-btn') as HTMLButtonElement;
+      const token = tokenInput.value.trim();
+
+      if (!token) return;
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/mfa-enroll', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Invalid verification code', true);
+          btn.disabled = false;
+          btn.textContent = 'Verify & Enable 2FA';
+          return;
+        }
+
+        showToast('Two-Factor Authentication activated successfully! Reloading...');
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err: any) {
+        showToast(err.message || 'Verification error', true);
+        btn.disabled = false;
+        btn.textContent = 'Verify & Enable 2FA';
+      }
+    });
+
+    // Disable MFA modal
+    const disableBtn = document.getElementById('disable-mfa-btn');
+    const disableModal = document.getElementById('disable-mfa-modal');
+    const cancelDisableBtn = document.getElementById('cancel-disable-btn');
+    const disableForm = document.getElementById('disable-mfa-form') as HTMLFormElement;
+
+    disableBtn?.addEventListener('click', () => {
+      disableModal?.classList.remove('hidden');
+    });
+
+    cancelDisableBtn?.addEventListener('click', () => {
+      disableModal?.classList.add('hidden');
+    });
+
+    disableForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const passwordInput = document.getElementById('disable-mfa-password') as HTMLInputElement;
+      const password = passwordInput.value;
+      if (!password) return;
+
+      try {
+        const res = await fetch('/api/auth/mfa-enroll', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to disable 2FA', true);
+          return;
+        }
+
+        showToast('Two-Factor Authentication disabled. Reloading...');
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err: any) {
+        showToast(err.message || 'Failed to disable 2FA', true);
+      }
+    });
+
+    // Password Update Form
+    const passwordForm = document.getElementById('password-form') as HTMLFormElement;
+    passwordForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = (document.getElementById('current-password') as HTMLInputElement).value;
+      const newPassword = (document.getElementById('new-password') as HTMLInputElement).value;
+      const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement).value;
+      const btn = document.getElementById('update-password-btn') as HTMLButtonElement;
+
+      if (newPassword !== confirmPassword) {
+        showToast('New passwords do not match.', true);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Updating Password...';
+
+      try {
+        const res = await fetch('/api/auth/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to update password', true);
+          btn.disabled = false;
+          btn.textContent = 'Update Password & Invalidate Other Sessions';
+          return;
+        }
+
+        showToast('Password updated successfully! All other sessions revoked.');
+        passwordForm.reset();
+        btn.disabled = false;
+        btn.textContent = 'Update Password & Invalidate Other Sessions';
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err: any) {
+        showToast(err.message || 'Error updating password', true);
+        btn.disabled = false;
+        btn.textContent = 'Update Password & Invalidate Other Sessions';
+      }
+    });
+
+    // Revoke Other Sessions
+    const revokeBtn = document.getElementById('revoke-other-sessions-btn');
+    revokeBtn?.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to log out all other active sessions across other devices?')) return;
+
+      try {
+        const res = await fetch('/api/auth/sessions', { method: 'DELETE' });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to revoke sessions', true);
+          return;
+        }
+
+        showToast(data.message || 'Other sessions revoked.');
+        setTimeout(() => window.location.reload(), 1000);
+      } catch (err: any) {
+        showToast(err.message || 'Error revoking sessions', true);
+      }
+    });
+  </script>
+</AdminLayout>

@@ -1,0 +1,252 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAllMedia } from '../../lib/media';
+
+export const prerender = false;
+
+const mediaList = await getAllMedia();
+---
+
+<AdminLayout title="Media Library" subtitle="Manage architecture diagrams, project covers & visual assets" activeNav="media">
+  
+  <div class="space-y-6">
+    <!-- Header Banner -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-[#F5F5F5] flex items-center space-x-2">
+          <span>Asset Vault & Media Storage</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-[#9CAF88]/10 text-[#9CAF88] border border-[#9CAF88]/30">{mediaList.length} Files</span>
+        </h2>
+        <p class="text-xs text-[#929292] mt-1">Upload screenshots, schematics, and OpenGraph banners up to 10MB (JPEG, PNG, WEBP, SVG).</p>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="status-toast" class="hidden p-4 rounded-xl border text-xs font-mono transition-all"></div>
+
+    <!-- Upload Dropzone -->
+    <div class="bg-[#202020] border border-[#343434] rounded-xl p-6">
+      <h3 class="text-xs font-mono uppercase tracking-wider text-[#929292] font-semibold mb-3">Upload New Asset</h3>
+      
+      <div id="dropzone" class="border-2 border-dashed border-[#343434] hover:border-[#9CAF88] transition-colors rounded-xl p-8 text-center cursor-pointer bg-[#191919]/50">
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif" class="hidden" />
+        
+        <div class="flex flex-col items-center justify-center space-y-2">
+          <div class="w-12 h-12 rounded-xl bg-[#282828] border border-[#343434] flex items-center justify-center text-[#9CAF88]">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="text-xs text-[#F5F5F5] font-medium">
+            <span class="text-[#9CAF88] hover:underline">Click to browse</span> or drag and drop image file here
+          </div>
+          <div class="text-[11px] text-[#929292] font-mono">
+            WEBP, PNG, JPEG, SVG up to 10MB
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected file bar (hidden initially) -->
+      <div id="file-details-bar" class="hidden mt-4 p-3 bg-[#191919] border border-[#343434] rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div class="flex items-center space-x-3 truncate">
+          <span id="selected-filename" class="font-mono text-[#F5F5F5] truncate max-w-xs"></span>
+          <span id="selected-filesize" class="font-mono text-[#929292] text-[11px]"></span>
+        </div>
+        <div class="flex items-center space-x-2 w-full sm:w-auto">
+          <input
+            type="text"
+            id="file-alt"
+            placeholder="Alt description..."
+            class="flex-1 sm:w-64 bg-[#202020] border border-[#343434] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F5F5] focus:border-[#9CAF88] focus:outline-none"
+          />
+          <button id="upload-btn" class="px-4 py-1.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold text-xs whitespace-nowrap transition-colors">
+            Upload Asset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Media Grid -->
+    <div>
+      <h3 class="text-xs font-mono uppercase tracking-wider text-[#929292] font-semibold mb-3">Stored Media Assets</h3>
+      
+      {mediaList.length === 0 ? (
+        <div class="bg-[#202020] border border-[#343434] rounded-xl p-12 text-center text-xs text-[#929292]">
+          No media uploaded yet. Use the dropzone above to store project images or diagrams.
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {mediaList.map((item: any) => (
+            <div class="bg-[#202020] border border-[#343434] rounded-xl overflow-hidden group hover:border-[#444444] transition-colors flex flex-col justify-between">
+              
+              <div class="aspect-video bg-[#141414] relative overflow-hidden flex items-center justify-center border-b border-[#343434]">
+                <img
+                  src={item.file_path}
+                  alt={item.alt_text || item.original_name}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/80 text-[#929292] uppercase border border-white/10">
+                  {item.mime_type.split('/')[1]}
+                </span>
+              </div>
+
+              <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="text-xs font-semibold text-[#F5F5F5] truncate" title={item.original_name}>
+                    {item.original_name}
+                  </div>
+                  <div class="text-[10px] font-mono text-[#929292] flex items-center justify-between mt-1">
+                    <span>{(item.size_bytes / 1024).toFixed(1)} KB</span>
+                    <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[#343434]/60 flex items-center space-x-1.5 text-xs">
+                  <button
+                    class="copy-url-btn flex-1 px-2.5 py-1.5 rounded-lg bg-[#282828] hover:bg-[#343434] text-[#F5F5F5] text-[11px] font-mono transition-colors truncate"
+                    data-url={item.file_path}
+                    title="Copy Image URL"
+                  >
+                    Copy URL
+                  </button>
+                  <button
+                    class="delete-media-btn p-1.5 rounded-lg bg-[#282828] hover:bg-[#EF4444]/20 hover:text-[#EF4444] text-[#929292] border border-[#343434] transition-colors"
+                    data-id={item.id}
+                    title="Delete Media File"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const detailsBar = document.getElementById('file-details-bar');
+    const selectedName = document.getElementById('selected-filename');
+    const selectedSize = document.getElementById('selected-filesize');
+    const altInput = document.getElementById('file-alt') as HTMLInputElement;
+    const uploadBtn = document.getElementById('upload-btn');
+    const toast = document.getElementById('status-toast');
+
+    let activeFile: File | null = null;
+
+    function showToast(msg: string, isError = false) {
+      if (!toast) return;
+      toast.classList.remove('hidden', 'bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30', 'bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      if (isError) {
+        toast.classList.add('bg-[#EF4444]/10', 'text-[#EF4444]', 'border-[#EF4444]/30');
+      } else {
+        toast.classList.add('bg-[#22C55E]/10', 'text-[#22C55E]', 'border-[#22C55E]/30');
+      }
+      toast.textContent = msg;
+      setTimeout(() => toast?.classList.add('hidden'), 4000);
+    }
+
+    dropzone?.addEventListener('click', () => fileInput.click());
+
+    dropzone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-[#9CAF88]');
+    });
+
+    dropzone?.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-[#9CAF88]');
+    });
+
+    dropzone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-[#9CAF88]');
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput?.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        handleFileSelect(fileInput.files[0]);
+      }
+    });
+
+    function handleFileSelect(file: File) {
+      activeFile = file;
+      if (selectedName) selectedName.textContent = file.name;
+      if (selectedSize) selectedSize.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+      detailsBar?.classList.remove('hidden');
+    }
+
+    uploadBtn?.addEventListener('click', async () => {
+      if (!activeFile) return;
+      uploadBtn.setAttribute('disabled', 'true');
+      uploadBtn.textContent = 'Uploading...';
+
+      const formData = new FormData();
+      formData.append('file', activeFile);
+      formData.append('alt_text', altInput?.value || '');
+
+      try {
+        const res = await fetch('/api/cms/media', {
+          method: 'POST',
+          body: formData,
+        });
+        const json = await res.json();
+        if (res.ok) {
+          showToast('Asset uploaded successfully!');
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          showToast(json.error || 'Upload failed', true);
+          uploadBtn.removeAttribute('disabled');
+          uploadBtn.textContent = 'Upload Asset';
+        }
+      } catch (err: any) {
+        showToast(err.message, true);
+        uploadBtn.removeAttribute('disabled');
+        uploadBtn.textContent = 'Upload Asset';
+      }
+    });
+
+    document.querySelectorAll('.copy-url-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const url = btn.getAttribute('data-url');
+        if (!url) return;
+        const fullUrl = window.location.origin + url;
+        await navigator.clipboard.writeText(fullUrl);
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('bg-[#22C55E]/20', 'text-[#22C55E]');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('bg-[#22C55E]/20', 'text-[#22C55E]');
+        }, 2000);
+      });
+    });
+
+    document.querySelectorAll('.delete-media-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id || !confirm('Permanently delete this media asset?')) return;
+
+        try {
+          const res = await fetch(`/api/cms/media?id=${id}`, { method: 'DELETE' });
+          const json = await res.json();
+          if (res.ok) {
+            showToast('Asset deleted successfully!');
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            showToast(json.error || 'Delete failed', true);
+          }
+        } catch (err: any) {
+          showToast(err.message, true);
+        }
+      });
+    });
+  </script>
+</AdminLayout>

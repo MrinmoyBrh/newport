@@ -1,0 +1,292 @@
+---
+import { getModuleConfig } from '../lib/content';
+
+let simConfig = {
+  title: 'SIMULATION HARNESS // LIVE ORCHESTRATION',
+  subtitle: 'CLIENT-SIDE MODEL',
+  description: "Simulate MicroBounty's sandboxed evaluation workflow: pull request webhook intake, BullMQ queue buffering, and isolated Docker container execution with memory limits (128MB) and timeouts.",
+  defaultTimeout: 5000,
+  memoryCap: '128MB',
+  cpuCeiling: '0.5 Cores'
+};
+
+try {
+  const dbConfig = await getModuleConfig('simulation');
+  if (dbConfig) simConfig = { ...simConfig, ...dbConfig };
+} catch (e) {
+  // Fallback
+}
+---
+
+<div id="architecture" class="mt-16 pt-16 border-t border-[#E9DFCF]/10 relative">
+  
+  <!-- Section Editorial Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-[#E9DFCF]/10 gap-6">
+    <div class="max-w-3xl">
+      <div class="flex items-center space-x-3 technical-mono text-xs text-[#9CAF88] mb-3">
+        <span class="w-2 h-2 rounded-full bg-[#9CAF88] animate-pulse"></span>
+        <span class="tracking-widest uppercase">{simConfig.title}</span>
+        <span class="px-2.5 py-0.5 text-[10px] bg-[#E9DFCF]/5 border border-[#E9DFCF]/15 rounded-full text-[#C9BFAF]">{simConfig.subtitle}</span>
+      </div>
+      <h3 class="font-brush text-3xl sm:text-4xl text-[#E9DFCF] tracking-wide leading-snug">
+        Simulate the <span class="font-script text-[#C9BFAF] font-normal text-[1.08em]">Code Runner.</span>
+      </h3>
+    </div>
+    <p class="paragraph-manrope font-manrope text-[16px] sm:text-[17px] text-[#C9BFAF] max-w-md leading-[1.65] lg:leading-[1.7] tracking-[-0.01em] font-normal">
+      {simConfig.description}
+    </p>
+  </div>
+
+  <!-- Simulator Shell -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+    
+    <!-- Left Panel: Interactive Controller (5 cols) -->
+    <div class="lg:col-span-5 bg-[#2B1D16]/75 border border-[#E9DFCF]/12 rounded-2xl p-6 sm:p-8 shadow-2xl relative flex flex-col justify-between backdrop-blur-md">
+      
+      <!-- Subtle Sage corner glow -->
+      <div class="absolute top-0 right-0 w-28 h-28 bg-[#9CAF88]/10 blur-2xl pointer-events-none"></div>
+
+      <div>
+        <!-- Controller Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9DFCF]/10 mb-6">
+          <div class="flex items-center space-x-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#9CAF88]"></span>
+            <span class="technical-mono text-xs text-[#E9DFCF] font-semibold uppercase tracking-wider">Evaluation Console</span>
+          </div>
+          <span class="technical-mono text-[11px] text-[#C9BFAF]/70">ENDPOINT: /api/v1/eval/submit</span>
+        </div>
+
+        <!-- PR / Code Payload Input -->
+        <div class="mb-5">
+          <label for="sim-prompt" class="block text-xs technical-mono text-[#C9BFAF] mb-2">
+            PULL REQUEST / CODE TEST PAYLOAD
+          </label>
+          <div class="relative">
+            <input
+              id="sim-prompt"
+              type="text"
+              value="PR #42: Worker pool async batch handler"
+              class="w-full bg-[#1D1511] border border-[#E9DFCF]/15 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#E9DFCF] technical-mono focus:border-[#9CAF88] focus:outline-none focus:ring-1 focus:ring-[#9CAF88] transition-colors"
+            />
+          </div>
+          <p class="text-[11px] text-[#C9BFAF]/70 mt-1.5 technical-mono">
+            *Simulated payload representing an incoming PR commit to test inside an isolated container.
+          </p>
+        </div>
+
+        <!-- Failure / Timeout Injection Toggle -->
+        <div class="p-4 bg-[#1D1511]/80 border border-[#E9DFCF]/10 rounded-xl mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-medium text-[#E9DFCF] block">Simulate Test Failure or Timeout</span>
+              <span class="text-[11px] text-[#C9BFAF] block">Inject test assertion failure (Exit Code 1) or container timeout</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+              <input type="checkbox" id="sim-fail-toggle" class="sr-only peer">
+              <div class="w-11 h-6 bg-[#403027] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#E9DFCF] after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#9CAF88]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="flex items-center space-x-3 pt-4 border-t border-[#E9DFCF]/10">
+        <button
+          id="sim-submit-btn"
+          type="button"
+          class="flex-1 py-3 px-5 bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold technical-mono text-xs rounded-full transition-all duration-200 shadow-[0_4px_16px_rgba(156,175,136,0.3)] flex items-center justify-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9CAF88]"
+        >
+          <span id="sim-btn-text">DISPATCH SANDBOX EVALUATION</span>
+          <svg id="sim-spinner" class="hidden w-4 h-4 animate-spin text-[#1D1511]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+        
+        <button
+          id="sim-reset-btn"
+          type="button"
+          title="Reset Simulator State"
+          class="py-3 px-4 bg-[#2B1D16] hover:bg-[#403027] text-[#C9BFAF] hover:text-[#E9DFCF] border border-[#E9DFCF]/15 rounded-full technical-mono text-xs transition-colors"
+        >
+          ↺ RESET
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right Panel: Live System Telemetry Stream (7 cols) -->
+    <div class="lg:col-span-7 bg-[#2B1D16]/75 border border-[#E9DFCF]/12 rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col justify-between backdrop-blur-md">
+      
+      <div>
+        <!-- Live Telemetry Readout Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          
+          <div class="p-3.5 bg-[#1D1511]/90 border border-[#E9DFCF]/10 rounded-xl">
+            <span class="block text-[10px] technical-mono text-[#C9BFAF]/70">CONTAINER RUNNER</span>
+            <span id="sim-container-state" class="block text-xs font-bold technical-mono text-[#E9DFCF] mt-0.5">IDLE (STANDBY)</span>
+            <span class="block text-[10px] text-[#C9BFAF]/50 technical-mono">Docker: sandbox-runner</span>
+          </div>
+
+          <div class="p-3.5 bg-[#1D1511]/90 border border-[#E9DFCF]/10 rounded-xl">
+            <span class="block text-[10px] technical-mono text-[#C9BFAF]/70">TASK QUEUE</span>
+            <span id="sim-queue-state" class="block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5">0 JOBS (WAITING)</span>
+            <span class="block text-[10px] text-[#C9BFAF]/50 technical-mono">BullMQ Worker: 1</span>
+          </div>
+
+          <div class="p-3.5 bg-[#1D1511]/90 border border-[#E9DFCF]/10 rounded-xl">
+            <span class="block text-[10px] technical-mono text-[#C9BFAF]/70">RESOURCE LIMITS</span>
+            <span class="block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5">128MB RAM // 0.5 CPU</span>
+            <span class="block text-[10px] text-[#C9BFAF]/50 technical-mono">Timeout: 5000ms</span>
+          </div>
+
+          <div class="p-3.5 bg-[#1D1511]/90 border border-[#E9DFCF]/10 rounded-xl">
+            <span class="block text-[10px] technical-mono text-[#C9BFAF]/70">EXECUTION DURATION</span>
+            <span id="sim-latency" class="block text-xs font-bold technical-mono text-[#E9DFCF] mt-0.5">-- ms</span>
+            <span id="sim-status-code" class="block text-[10px] text-[#C9BFAF]/50 technical-mono">STATUS: --</span>
+          </div>
+
+        </div>
+
+        <!-- Terminal Output Stream -->
+        <div class="bg-[#150F0C] border border-[#E9DFCF]/10 rounded-xl p-4 font-mono text-[11px] sm:text-xs leading-relaxed overflow-x-auto min-h-[220px] max-h-[260px] flex flex-col justify-end">
+          <div id="sim-log-stream" class="space-y-1.5 text-[#C9BFAF] overflow-y-auto">
+            <div class="text-[#C9BFAF]/70">[SIMULATOR INIT] MicroBounty Code Runner simulation ready...</div>
+            <div class="text-[#C9BFAF]/70">[DOCKER ENGINE] Local container socket attached: /var/run/docker.sock</div>
+            <div class="text-[#C9BFAF]/70">[BULLMQ] Evaluation worker pool listening on redis://127.0.0.1:6379</div>
+            <div class="text-[#E9DFCF] font-semibold">[READY] Awaiting pull request test payload or webhook trigger...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanatory Dossier Footer -->
+      <div class="mt-4 pt-4 border-t border-[#E9DFCF]/10 flex items-center justify-between text-[11px] text-[#C9BFAF] technical-mono">
+        <span>*Client-side simulation of MicroBounty container evaluation workflow</span>
+        <a href="/projects/microbounty" class="text-[#9CAF88] hover:text-[#B1C2A0] transition-colors">
+          View MicroBounty Architecture →
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Client-side simulation of MicroBounty sandboxed code evaluation workflow
+  let jobCounter = 42;
+  const promptInput = document.getElementById('sim-prompt') as HTMLInputElement;
+  const failToggle = document.getElementById('sim-fail-toggle') as HTMLInputElement;
+  const submitBtn = document.getElementById('sim-submit-btn') as HTMLButtonElement;
+  const resetBtn = document.getElementById('sim-reset-btn') as HTMLButtonElement;
+  const btnText = document.getElementById('sim-btn-text');
+  const spinner = document.getElementById('sim-spinner');
+  
+  const containerStateEl = document.getElementById('sim-container-state');
+  const queueStateEl = document.getElementById('sim-queue-state');
+  const latencyEl = document.getElementById('sim-latency');
+  const statusCodeEl = document.getElementById('sim-status-code');
+  const logStream = document.getElementById('sim-log-stream');
+
+  function appendLog(text: string, colorClass = 'text-[#C9BFAF]') {
+    if (!logStream) return;
+    const time = new Date().toISOString().substring(11, 19);
+    const line = document.createElement('div');
+    line.className = colorClass;
+    line.textContent = `[${time}] ${text}`;
+    logStream.appendChild(line);
+    logStream.scrollTop = logStream.scrollHeight;
+  }
+
+  submitBtn?.addEventListener('click', async () => {
+    const payload = promptInput?.value || 'PR #42: Code evaluation test';
+    if (!payload.trim()) return;
+
+    jobCounter++;
+    const jobId = 'mb_' + Math.random().toString(36).substring(2, 8);
+
+    // UI loading state
+    submitBtn.disabled = true;
+    if (spinner) spinner.classList.remove('hidden');
+    if (btnText) btnText.textContent = 'RUNNING SANDBOX...';
+
+    if (queueStateEl) {
+      queueStateEl.textContent = '1 JOB QUEUED';
+      queueStateEl.className = 'block text-xs font-bold technical-mono text-[#E9DFCF] mt-0.5';
+    }
+    if (containerStateEl) {
+      containerStateEl.textContent = 'SPAWNING...';
+      containerStateEl.className = 'block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5';
+    }
+
+    appendLog(`POST /api/v1/eval/submit {"payload": "${payload.substring(0, 36)}..."}`, 'text-[#E9DFCF] font-semibold');
+    appendLog(`[BULLMQ] Enqueued evaluation task [jobId: ${jobId}] into BullMQ task buffer`, 'text-[#C9BFAF]/80');
+
+    await new Promise(r => setTimeout(r, 250));
+
+    if (containerStateEl) {
+      containerStateEl.textContent = 'RUNNING (ISOLATED)';
+      containerStateEl.className = 'block text-xs font-bold technical-mono text-[#9CAF88] mt-0.5';
+    }
+
+    appendLog(`[WORKER] Worker thread acquired job ${jobId}. Provisioning Docker sandbox...`, 'text-[#C9BFAF]/80');
+    appendLog(`[DOCKER] Spawning container: sandbox-runner (Memory: 128MB, CPU: 0.5 cores)`, 'text-[#C9BFAF]/80');
+    appendLog(`[EXEC] Executing test runner: npm test -- --runInBand`, 'text-[#C9BFAF]/80');
+
+    const shouldFail = failToggle?.checked;
+
+    if (shouldFail) {
+      await new Promise(r => setTimeout(r, 550));
+      appendLog(`[STDERR] FAIL test/worker.test.ts -> AssertionError: Expected worker lock released`, 'text-[#E9DFCF] font-semibold');
+      appendLog(`[CONTAINER] Process completed with Exit Code 1. Container auto-removed.`, 'text-[#C9BFAF]');
+      appendLog(`[RESULT] PR Verification: FAILED (Exit Code 1). Security status check dispatched.`, 'text-[#E9DFCF] font-bold');
+
+      if (containerStateEl) {
+        containerStateEl.textContent = 'EXIT 1 (FAILED)';
+        containerStateEl.className = 'block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5';
+      }
+      if (queueStateEl) {
+        queueStateEl.textContent = '0 JOBS (COMPLETED)';
+        queueStateEl.className = 'block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5';
+      }
+      if (latencyEl) latencyEl.textContent = '580 ms';
+      if (statusCodeEl) statusCodeEl.textContent = 'STATUS: FAILED (1)';
+
+    } else {
+      await new Promise(r => setTimeout(r, 400));
+      appendLog(`[STDOUT] PASS test/worker.test.ts (4 tests passed, 0 failed, 380ms)`, 'text-[#9CAF88] font-semibold');
+      appendLog(`[CONTAINER] Process completed with Exit Code 0. Container auto-removed.`, 'text-[#C9BFAF]');
+      appendLog(`[RESULT] PR Verification: PASSED. GitHub PR check status updated.`, 'text-[#9CAF88] font-bold');
+
+      if (containerStateEl) {
+        containerStateEl.textContent = 'EXIT 0 (PASSED)';
+        containerStateEl.className = 'block text-xs font-bold technical-mono text-[#9CAF88] mt-0.5';
+      }
+      if (queueStateEl) {
+        queueStateEl.textContent = '0 JOBS (COMPLETED)';
+        queueStateEl.className = 'block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5';
+      }
+      if (latencyEl) latencyEl.textContent = '420 ms';
+      if (statusCodeEl) statusCodeEl.textContent = 'STATUS: PASSED (0)';
+    }
+
+    submitBtn.disabled = false;
+    if (spinner) spinner.classList.add('hidden');
+    if (btnText) btnText.textContent = 'DISPATCH SANDBOX EVALUATION';
+  });
+
+  resetBtn?.addEventListener('click', () => {
+    if (failToggle) failToggle.checked = false;
+    if (containerStateEl) {
+      containerStateEl.textContent = 'IDLE (STANDBY)';
+      containerStateEl.className = 'block text-xs font-bold technical-mono text-[#E9DFCF] mt-0.5';
+    }
+    if (queueStateEl) {
+      queueStateEl.textContent = '0 JOBS (WAITING)';
+      queueStateEl.className = 'block text-xs font-bold technical-mono text-[#C9BFAF] mt-0.5';
+    }
+    if (latencyEl) latencyEl.textContent = '-- ms';
+    if (statusCodeEl) statusCodeEl.textContent = 'STATUS: --';
+    appendLog(`[RESET] Simulator state reset. Container runner standing by.`, 'text-[#E9DFCF]');
+  });
+</script>

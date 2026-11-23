@@ -1,0 +1,349 @@
+---
+import '../styles/global.css';
+import { getSessionUser, getAdminUserCount } from '../lib/auth';
+
+interface Props {
+  title: string;
+  activeNav?: string;
+  subtitle?: string;
+}
+
+const { title, activeNav = 'dashboard', subtitle } = Astro.props;
+
+// Route Guard
+let user = null;
+try {
+  const adminCount = await getAdminUserCount();
+  if (adminCount === 0) {
+    return Astro.redirect('/admin/setup');
+  }
+
+  user = await getSessionUser(Astro.cookies);
+  if (!user) {
+    return Astro.redirect('/admin/login');
+  }
+} catch (err: any) {
+  console.error('[AdminLayout Error] Database check failed:', err);
+  return Astro.redirect('/admin/login?error=db_error');
+}
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — Portfolio CMS Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style is:global>
+      /* Portfolio V2 Admin Color System */
+      :root {
+        --admin-bg: #1D1511;
+        --admin-sidebar: #2B1D16;
+        --admin-card: #2B1D16;
+        --admin-card-elevated: #403027;
+        --admin-accent: #9CAF88;
+        --admin-accent-hover: #B1C2A0;
+        --admin-text-primary: #E9DFCF;
+        --admin-text-secondary: #C9BFAF;
+        --admin-border: rgba(233, 223, 207, 0.12);
+        --admin-success: #9CAF88;
+        --admin-warning: #D9A74A;
+        --admin-error: #D9776A;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        background-color: var(--admin-bg);
+        color: var(--admin-text-primary);
+        margin: 0;
+        overflow-x: hidden;
+      }
+      ::selection {
+        background-color: #9CAF88;
+        color: #1D1511;
+      }
+      :focus-visible {
+        outline: 2px solid #9CAF88;
+        outline-offset: 2px;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #2B1D16;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #403027;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #523E33;
+      }
+
+      svg {
+        display: inline-block;
+        vertical-align: middle;
+        flex-shrink: 0;
+      }
+      svg.w-3\.5, svg.w-3 { width: 0.875rem !important; height: 0.875rem !important; min-width: 0.875rem; }
+      svg.w-4 { width: 1rem !important; height: 1rem !important; min-width: 1rem; }
+      svg.w-5 { width: 1.25rem !important; height: 1.25rem !important; min-width: 1.25rem; }
+      svg.w-6 { width: 1.5rem !important; height: 1.5rem !important; min-width: 1.5rem; }
+      svg.w-7 { width: 1.75rem !important; height: 1.75rem !important; min-width: 1.75rem; }
+      svg.w-8 { width: 2rem !important; height: 2rem !important; min-width: 2rem; }
+    </style>
+  </head>
+  <body class="bg-[#1D1511] text-[#E9DFCF] min-h-screen flex antialiased">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+    <!-- ============================================================
+         PORTFOLIO V2 ADMIN SIDEBAR
+         Espresso & Warm Brown Sidebar with Sage Green Highlights
+         ============================================================ -->
+    <aside id="admin-sidebar" class="fixed top-0 bottom-0 left-0 w-64 bg-[#2B1D16] border-r border-[#E9DFCF]/10 z-50 flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0">
+      
+      <!-- Brand Header -->
+      <div class="h-16 px-5 border-b border-[#E9DFCF]/10 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-7 h-7 rounded-lg bg-[#9CAF88] flex items-center justify-center font-black text-[#1D1511] text-xs font-mono shadow-sm">
+            MB
+          </div>
+          <div>
+            <span class="text-sm font-bold tracking-tight text-[#E9DFCF] block leading-none">PORTFOLIO CMS</span>
+            <span class="text-[10px] text-[#C9BFAF] font-mono leading-none mt-1 block">V2 PLATFORM</span>
+          </div>
+        </div>
+        <button id="close-sidebar-btn" class="lg:hidden p-1.5 text-[#C9BFAF] hover:text-[#E9DFCF] rounded-md hover:bg-[#403027]">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Compact Search Field -->
+      <div class="p-3 border-b border-[#E9DFCF]/10">
+        <div class="relative">
+          <input
+            id="sidebar-search"
+            type="text"
+            placeholder="Search CMS sections..."
+            class="w-full bg-[#1D1511] border border-[#E9DFCF]/15 rounded-lg px-3 py-1.5 text-xs text-[#E9DFCF] placeholder-[#C9BFAF]/60 focus:outline-none focus:border-[#9CAF88] transition-colors"
+          />
+          <svg class="w-3.5 h-3.5 text-[#C9BFAF]/60 absolute right-2.5 top-2.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Groups (Custom Scrollbar) -->
+      <nav class="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-6 text-xs">
+        
+        <!-- Group: OVERVIEW -->
+        <div>
+          <span class="px-2 text-[10px] font-mono uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-1.5">Overview</span>
+          <div class="space-y-0.5">
+            <a href="/admin" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'dashboard' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span>Dashboard</span>
+            </a>
+            <a href="/admin#activity" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'activity' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Recent Activity</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group: PORTFOLIO CONTENT -->
+        <div>
+          <span class="px-2 text-[10px] font-mono uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-1.5">Portfolio Content</span>
+          <div class="space-y-0.5">
+            <a href="/admin/hero" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'hero' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Hero Editor</span>
+            </a>
+            <a href="/admin/projects" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'projects' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>Project Showcase</span>
+            </a>
+            <a href="/admin/additional-systems" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'additional-systems' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Additional Systems</span>
+            </a>
+            <a href="/admin/skills" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'skills' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+              <span>Skills & Architecture</span>
+            </a>
+            <a href="/admin/principles" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'principles' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Principles</span>
+            </a>
+            <a href="/admin/experience" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'experience' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span>Experience</span>
+            </a>
+            <a href="/admin/education" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'education' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+              <span>Education</span>
+            </a>
+            <a href="/admin/simulation" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'simulation' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Simulation Harness</span>
+            </a>
+            <a href="/admin/terminal" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'terminal' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Terminal Config</span>
+            </a>
+            <a href="/admin/contact" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'contact' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span>Contact Coordinates</span>
+            </a>
+            <a href="/admin/footer" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'footer' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+              <span>Footer Config</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group: MANAGEMENT -->
+        <div>
+          <span class="px-2 text-[10px] font-mono uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-1.5">Management</span>
+          <div class="space-y-0.5">
+            <a href="/admin/media" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'media' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Media Library</span>
+            </a>
+            <a href="/admin/appearance" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'appearance' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+              <span>Appearance & Clouds</span>
+            </a>
+            <a href="/admin/seo" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'seo' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              <span>SEO Settings</span>
+            </a>
+            <a href="/admin/publishing" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'publishing' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <span>Publishing & Drafts</span>
+            </a>
+            <a href="/admin/history" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'history' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Revisions & Rollback</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group: SYSTEM -->
+        <div>
+          <span class="px-2 text-[10px] font-mono uppercase tracking-wider text-[#C9BFAF]/70 font-semibold block mb-1.5">System</span>
+          <div class="space-y-0.5">
+            <a href="/admin/security" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'security' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span>Security & 2FA</span>
+            </a>
+            <a href="/admin/backup" class={`flex items-center space-x-2.5 px-2.5 py-2 rounded-lg transition-colors font-medium ${activeNav === 'backup' ? 'bg-[#9CAF88] text-[#1D1511] font-bold' : 'text-[#C9BFAF] hover:text-[#E9DFCF] hover:bg-[#403027]/50'}`}>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+              <span>Backup & Restore</span>
+            </a>
+          </div>
+        </div>
+
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="p-3 border-t border-[#E9DFCF]/10 bg-[#1D1511] flex items-center justify-between">
+        <div class="flex items-center space-x-2 min-w-0">
+          <div class="w-7 h-7 rounded-full bg-[#403027] border border-[#E9DFCF]/15 flex items-center justify-center font-bold text-xs text-[#9CAF88]">
+            {user.name.charAt(0)}
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-semibold text-[#E9DFCF] block truncate leading-tight">{user.name}</span>
+            <span class="text-[10px] text-[#C9BFAF] font-mono block truncate">@{user.username}</span>
+          </div>
+        </div>
+        <button id="logout-btn" title="Sign Out" class="p-1.5 text-[#C9BFAF] hover:text-[#D9776A] rounded-md hover:bg-[#403027] transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ============================================================
+         MAIN CONTENT AREA & TOPBAR
+         ============================================================ -->
+    <div class="flex-1 lg:pl-64 flex flex-col min-w-0">
+      
+      <!-- Top Navigation Bar -->
+      <header class="h-16 bg-[#2B1D16]/90 border-b border-[#E9DFCF]/10 sticky top-0 z-30 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <button id="open-sidebar-btn" class="lg:hidden p-1.5 text-[#C9BFAF] hover:text-[#E9DFCF] rounded-lg hover:bg-[#403027]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-[#E9DFCF] leading-tight">{title}</h1>
+            {subtitle && <p class="text-xs text-[#C9BFAF] hidden sm:block leading-none mt-0.5">{subtitle}</p>}
+          </div>
+        </div>
+
+        <!-- Quick Access Actions -->
+        <div class="flex items-center space-x-3 text-xs">
+          <a
+            href="/admin/preview"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3.5 py-1.5 rounded-lg bg-[#403027] hover:bg-[#523E33] border border-[#E9DFCF]/15 text-[#E9DFCF] font-medium transition-colors flex items-center space-x-1.5"
+          >
+            <span>Live Draft Preview</span>
+            <svg class="w-3.5 h-3.5 text-[#9CAF88]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </a>
+
+          <a
+            href="/"
+            target="_blank"
+            class="px-3.5 py-1.5 rounded-lg bg-[#9CAF88] hover:bg-[#B1C2A0] text-[#1D1511] font-bold transition-colors flex items-center space-x-1.5 shadow-sm"
+          >
+            <span>View Public Site</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Body Viewport -->
+      <main class="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">
+        <slot />
+      </main>
+
+    </div>
+
+    <!-- Client Script for Sidebar Toggle & Logout -->
+    <script>
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const openBtn = document.getElementById('open-sidebar-btn');
+      const closeBtn = document.getElementById('close-sidebar-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+
+      openBtn?.addEventListener('click', () => {
+        sidebar?.classList.remove('-translate-x-full');
+        overlay?.classList.remove('hidden');
+      });
+
+      closeBtn?.addEventListener('click', () => {
+        sidebar?.classList.add('-translate-x-full');
+        overlay?.classList.add('hidden');
+      });
+
+      overlay?.addEventListener('click', () => {
+        sidebar?.classList.add('-translate-x-full');
+        overlay?.classList.add('hidden');
+      });
+
+      logoutBtn?.addEventListener('click', async () => {
+        if (confirm('Sign out of Portfolio CMS?')) {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          window.location.href = '/admin/login';
+        }
+      });
+    </script>
+  </body>
+</html>
