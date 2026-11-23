@@ -154,18 +154,18 @@
   background-image: 
     linear-gradient(to right, rgba(233, 223, 207, 0.065) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(233, 223, 207, 0.065) 1px, transparent 1px);
-  background-size: 38px 48px;
+  background-size: 35px 65px;
 }
 
 @media (max-width: 1024px) {
   .tech-grid-bg {
-    background-size: 32px 48px;
+    background-size: 35px 60px;
   }
 }
 
 @media (max-width: 640px) {
   .tech-grid-bg {
-    background-size: 25px 48px;
+    background-size: 28px 60px;
   }
 }
 
